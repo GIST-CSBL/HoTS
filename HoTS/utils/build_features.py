@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from utils.metric import IoU
+from HoTS.utils.metric import IoU
 from keras.preprocessing.sequence import pad_sequences
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -211,7 +211,10 @@ def get_anchor_index(binding_length, anchors):
 
 def parse_HoTS_data(path_to_hots, name_index="Protein_ID", pdb_bound=False, compound_encoder=None, protein_encoder=None,
                     binding_region=True):
+    print("Parsing HoTS data: %s"%path_to_hots)
     hots_df = pd.read_csv(path_to_hots, sep='\t')
+    print("Number of 3D-complexes : %d" % hots_df.shape[0])
+    print("Number of proteins : %d" % np.unique(hots_df[name_index]).shape[0])
     if protein_encoder.get_type()=="PSSM":
         seq = hots_df.Protein_ID.map(protein_encoder.encode).tolist()
     else:

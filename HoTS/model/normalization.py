@@ -7,7 +7,7 @@ _DEFAULT_WEIGHT_NAME = 'kernel'
 
 
 class LayerNormalization(Layer):
-    def __init__(self, eps=1e-6, **kwargs):
+    def __init__(self, eps=1e-4, **kwargs):
         self.eps = eps
         super(LayerNormalization, self).__init__(**kwargs)
     def build(self, input_shape):

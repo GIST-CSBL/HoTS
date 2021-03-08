@@ -50,6 +50,9 @@ class DataGeneratorDTI(object):
         units = self.__grid_size
         max_len = int(np.ceil(max_len/units)*units)
         protein_features = self.protein_encoder.pad(proteins, max_len=max_len)
+        mask = np.zeros(shape=(end_ind - start_ind, int(np.ceil(max_len / self.__grid_size)) + 1))
+        for i, protein in enumerate(proteins):
+            mask[i, 0: int(np.ceil(len(protein) / self.__grid_size)) + 1] = 1
         if self.__compound_type.split("_")[0]=="SMILES":
             smiles_max_len = max([len(smiles) for smiles in drugs])
             smiles_max_len = int(np.ceil(smiles_max_len/units)*units)
@@ -65,10 +68,10 @@ class DataGeneratorDTI(object):
             if self.train:
                 labels = self.__label[start_ind: end_ind]
                 labels = np.array(labels)
-                return [drugs, protein_features], [labels]
+                return [drugs, protein_features, mask], [labels]
 
             else:
-                return [drugs, protein_features]
+                return [drugs, protein_features, mask]
 
 
 class DataGeneratorHoTS(object):
@@ -168,6 +171,9 @@ class DataGeneratorHoTS(object):
         max_len = int(np.ceil(max_len/units)*units)
         returning_sequence = self.__protein_encoder.pad(self.__protein[start_ind:end_ind], max_len=max_len)
         queried_ligands = self.__ligand[start_ind:end_ind]
+        mask = np.zeros(shape=(end_ind - start_ind, int(np.ceil(max_len / self.__grid_size)) + 1))
+        for i, protein in enumerate(sequences):
+            mask[i, 0: int(np.ceil(len(protein) / self.__grid_size)) + 1] = 1
         #print(self.__compound_type)
         if self.__compound_type.split("_")[0]=="SMILES":
             smiles_max_len = max([len(smiles) for smiles in queried_ligands])
@@ -186,8 +192,8 @@ class DataGeneratorHoTS(object):
                             for i, indice in enumerate(queried_indice)]
             hots_grid_outputs = np.stack([hots_output[0] for hots_output in hots_outputs], axis=0)
             hots_indice = [hots_output[1] for hots_output in hots_outputs]
-            return returning_sequence, hots_grid_outputs, hots_indice, queried_ligands, queried_dtis, entry_names
+            return returning_sequence, hots_grid_outputs, mask, hots_indice, queried_ligands, queried_dtis, entry_names
         else:
-            return returning_sequence, queried_ligands
+            return returning_sequence, mask, queried_ligands
 
 

@@ -3,7 +3,7 @@
 ## Introduction
 
 Recently, many feature based drug-target interaction (DTI) prediction models are developed.
-Especially, for protein feature, many models take raw amino acid sequence as the input, building end-to-end model.<sup>[DeepDTA](https://academic.oup.com/bioinformatics/article/34/17/i821/5093245),[DeepAffinity](https://academic.oup.com/bioinformatics/article/35/18/3329/5320555)</sup>
+Especially, for protein feature, many models take raw amino acid sequence as the input, building end-to-end model.
 
 This model gives some advantages for prediction, such as
 
@@ -19,18 +19,17 @@ It means that training and updating weights of CNN layers to capture local resid
 So, we built model on protein sequence to predict ``binding region``, which is called **Highlight on Protein Sequence (HoTS)**.
 We predict ``binding regions`` of protein in the way of object detection in image processing field.
 
-We refered ``binding region`` as consecutive amino acid residue including ``binding site`` interacting with ligand in protein-ligand complex.
+We refers ``binding region`` as consecutive amino acid residue including ``binding site`` interacting with ligand in protein-ligand complex.
 By predicting ``binding region``, performance of DTI prediction increase than previous model [DeepConv-DTI](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007129).
 
-## Materials
+Moreover, as pointed in [studies](https://www.researchgate.net/publication/335085389_Improved_fragment_sampling_for_ab_initio_protein_structure_prediction_using_deep_neural_networks), inter-dependency between protein moitifs must be considered for better respresentation
 
-[Materials link](Data/README.md)
-[Methods link](Data/README.md)
+Our model utilized [Transformers](https://arxiv.org/abs/1706.03762) to model interdependency between sequential grids.
+Moreover, we added compound token before protein grids as ``<CLS>`` token is added to predict class of sentence. Transformer also will model interaction between protein and compound.
 
-## Methods
+Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 
-## Results
+## Overview Figure
 
-## Discussion
-
+![OverviewFigure](Figures/Fig_1.jpg){: width="800" height="100"}
 

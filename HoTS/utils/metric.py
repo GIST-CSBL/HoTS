@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics import auc
 from multiprocessing import Pool
+from tqdm import tqdm, tqdm_notebook
 
 
 def IoU(true_c, true_w, pred_c, pred_w, mode='cw'):
@@ -49,6 +50,7 @@ class AP_calculator(object):
         self.n_true = len(sum(self.true_inds.values(), []))
         self.precisions = None
         self.recalls = None
+        self.true_called = np.zeros(self.n_pred)
 
     def build_recall_index(self, start, end, min_value, max_value):
         if end-start > max_value:
@@ -62,51 +64,61 @@ class AP_calculator(object):
 
     def get_AP(self):
         pred_calls = []
-        precisions = []
-        recalls = []
-        for pred_ind in self.pred_inds:
+        #precisions = []
+        #recalls = []
+        pool = Pool(20)
+        pred_ind_for_gt = [(pred_start, pred_end, self.true_inds[sample_ind], self.true_inds_called[sample_ind])
+                           for sample_ind, pred_start, pred_end, score in self.pred_inds]
+        call_results = pool.starmap(self.call_prediction_gt, pred_ind_for_gt)
+        pool.close()
+        pool.terminate()
+        pool.join()
+        precisions = np.cumsum([pred_called for pred_called, true_inds_called, is_true_called in call_results])
+        recalls = np.cumsum([is_true_called for pred_called, true_inds_called, is_true_called in call_results])
+        '''
+        for pred_ind, call_result in tqdm(zip(self.pred_inds, call_results), desc="PR_calculation", total=len(call_results),
+                                          bar_format="{l_bar}{r_bar}"):
             sample_ind, pred_start, pred_end, score = pred_ind
-            pred_called, true_inds_called = self.call_prediction_gt(pred_start, pred_end, self.true_inds[sample_ind],
-                                                                    self.true_inds_called[sample_ind], self.min_value, self.max_value)
+            pred_called, true_inds_called = call_result#self.call_prediction_gt(pred_start, pred_end, self.true_inds[sample_ind],
+                                            #                        self.true_inds_called[sample_ind], self.min_value, self.max_value)
             pred_calls.append(pred_called)
-            precisions.append(sum(pred_calls)/len(pred_calls))
-            self.true_inds_called[sample_ind] = true_inds_called
-            recalls.append(self.get_n_called_true()/self.n_true)
-
-        self.precisions = np.array(precisions)
-        self.recalls = np.array(recalls)
+            precisions.append(sum(pred_calls))
+            #self.true_inds_called[sample_ind] = true_inds_called
+            recalls.append(self.get_n_called_true())
+        '''
+        self.precisions = np.array(precisions)/range(1, len(call_results)+1)
+        self.recalls = np.array(recalls)/self.n_true
         for k in range(len(self.precisions)-2):
             self.precisions[k] = max(self.precisions[k+1:])
-        ap = auc(recalls, precisions)
-
         interpolated_precisions = []
         for i in range(11):
-            recall_ind = i/10
-            precisions = self.precisions[self.recalls>=recall_ind]
-            if len(precisions) > 0:
-                interpolated_precisions.append(np.max(precisions))
-            else:
-                interpolated_precisions.append(0)
-
+            recall_ind = int((len(self.recalls) - 1) * (i/10))
+            precision = self.precisions[recall_ind]
+            interpolated_precisions.append(precision)
         print(interpolated_precisions)
+        ap = np.mean(interpolated_precisions)  # auc(recalls, precisions)
         return ap
 
 
-    def call_prediction_gt(self, pred_start, pred_end, true_indices, true_called, min_value=3, max_value=27, th=0.5):
+    def call_prediction_gt(self, pred_start, pred_end, true_indices, true_called, th=0.5):
+
         pred_call = False
         true_called = true_called.copy()
+        is_true_called = False
         for i, true_start_end in enumerate(true_indices):
             true_start, true_end = true_start_end
 
-            if (true_end - true_start) <= min_value:
+            if (true_end - true_start) <= self.min_value:
                 if true_called[i]==True:
                     continue
                 true_called_with_pred = [(pred_start <= s) & (pred_end >= s) for s in range(true_start, true_end)]
                 if sum(true_called_with_pred)/len(true_called_with_pred)>=th:
                     pred_call = True
                     true_called[i] = True
-            if (true_end - true_start) > max_value :
+                    is_true_called = True
+            if (true_end - true_start) > self.max_value :
                 if true_called[i] == True:
+                    is_true_called = True
                     continue
                 prediction_called = [(true_start <= s) & (true_end >= s)  for s in range(pred_start, pred_end)]
                 if (sum(prediction_called)/len(prediction_called)) >= th:
@@ -115,13 +127,15 @@ class AP_calculator(object):
                 true_called[i] = [(s_1 | s_2) for s_1, s_2 in zip(true_called_with_pred, true_called[i])]
                 if sum(true_called[i])/len(true_called[i]) >= th:
                     true_called[i] = True
+                    is_true_called = True
             else:
                 if true_called[i] == True:
                     continue
                 if IoU(true_start, true_end, pred_start, pred_end, mode='se') >= th:
                     pred_call = True
                     true_called[i] = True
-        return pred_call, true_called
+                    is_true_called = True
+        return pred_call, true_called, is_true_called
 
 
 

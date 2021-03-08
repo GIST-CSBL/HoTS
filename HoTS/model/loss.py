@@ -69,7 +69,7 @@ class HoTSLoss(object):
 
 
         # Retina
-        pt = tf.maximum(self.tanh_to_sigmoid(pred_label), EPSILON)
+        pt = tf.maximum(pred_label, EPSILON)
         pt = tf.minimum(pt, 1 - EPSILON)
         retina_conf_obj = -((1-pt)**self.retina_weight)*tf.log(pt) * self.conf_loss_weight * is_true
         retina_conf_noobj = -((pt)**self.retina_weight)*tf.log(1-pt) * self.conf_loss_weight * self.negative_loss_weight * is_false
