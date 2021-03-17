@@ -5,8 +5,7 @@ from keras.preprocessing.sequence import pad_sequences
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from ast import literal_eval
-import itertools
-from scipy.sparse import csgraph
+from tqdm import tqdm
 
 aa = ['A','I','L','V','F','W','Y','N','C','Q','M','S','T','D','E','R','H','K','G','P','O','U','X','B','Z']
 seq_dic = {w: i+1 for i,w in enumerate(aa)}
@@ -160,14 +159,15 @@ def parse_DTI_data(dti_dir, drug_dir, protein_dir, with_label=True, prot_len=250
     dti_df = pd.read_csv(dti_dir)
     drug_df = pd.read_csv(drug_dir, index_col="Compound_ID")
     protein_df = pd.read_csv(protein_dir, index_col="Protein_ID")
-
-    smiles = drug_df.SMILES.tolist()
+    tqdm.pandas()
+    #smiles = drug_df.SMILES.tolist()
     if compound_encoder is not None:
         drug_vec=compound_encoder.get_type()
         print("Encoding compound with %s type"%drug_vec)
-        encoded_drug = [compound_encoder.encode(s) for s in smiles]
+        #encoded_drug = [compound_encoder.encode(s) for s in smiles]
+        drug_df["drug_feature"] = drug_df.SMILES.progress_map(compound_encoder.encode)
         print("Encoding compound ends!")
-        drug_df["drug_feature"] = encoded_drug
+
     else:
         drug_df["drug_feature"] = drug_df[drug_vec].map(lambda fp: [int(bit) for bit in fp.split("\t")])
     dti_df = pd.merge(dti_df, protein_df, left_on=protein_col, right_index=True, how='left')
@@ -215,10 +215,11 @@ def parse_HoTS_data(path_to_hots, name_index="Protein_ID", pdb_bound=False, comp
     hots_df = pd.read_csv(path_to_hots, sep='\t')
     print("Number of 3D-complexes : %d" % hots_df.shape[0])
     print("Number of proteins : %d" % np.unique(hots_df[name_index]).shape[0])
+    tqdm.pandas()
     if protein_encoder.get_type()=="PSSM":
         seq = hots_df.Protein_ID.map(protein_encoder.encode).tolist()
     else:
-        seq = hots_df.Sequence.map(protein_encoder.encode).tolist()
+        seq = hots_df.Sequence.progress_map(protein_encoder.encode).tolist()
     smiles = hots_df.SMILES.tolist()
     original_seqs = hots_df.Sequence.tolist()
     if compound_encoder.get_type().split("_")[0]=="SMILES":

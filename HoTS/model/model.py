@@ -19,7 +19,7 @@ class HoTSModel(object):
                return [value]
             else:
                return tuple(value)
-        regularizer_param = 0.0001
+        regularizer_param = 0.001
         params_dic = {"kernel_initializer": initializer,
                       # "activity_regularizer": l2(regularizer_param),
                       "kernel_regularizer": l2(regularizer_param),
@@ -51,10 +51,13 @@ class HoTSModel(object):
         model_phs = [self.PLayer(stride_size, int(filters/2), activation, dropout, params_dic, norm=True,
                         name="HoTS_protein_conv_size_%d"%(stride_size))(embedding_inputs) for stride_size in protein_strides]
         model_ph = Concatenate()(model_phs)
+        #model_ph_gate = Activation('sigmoid')(model_ph)
         model_pts = [self.PLayer(stride_size, int(filters/2), activation, dropout, params_dic, norm=True,
                         name="DTI_protein_conv_size_%d"%(stride_size))(embedding_inputs) for stride_size in protein_strides]
         model_pt = Concatenate()(model_pts)
+        #model_pt_gate = Activation("sigmoid")(model_pt)
         model_p_interaction = Concatenate()([model_ph, model_pt])
+        #model_p_interaction = Multiply()([model_ph, model_pt_gate])
         model_p_orig = model_p_interaction
 
         # Convert to transformer input
@@ -62,18 +65,26 @@ class HoTSModel(object):
                                                        name="DTI_Convolution_Dense", params_dic=params_dic)(model_p_orig)
         model_p_orig = MaxPool1D(protein_grid_size, padding='same')(model_p_orig)
 
-        model_p_orig = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=True, params_dic={},
-                                                        name="DTI_Protein_feature_attention_Input")(model_p_orig)
+        model_p_orig = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=True, params_dic=params_dic,
+                                                        use_bias=False, name="DTI_Protein_feature_attention_Input")(model_p_orig)
         model_d_ref = RepeatVector(1)(model_ds[-1])
-        model_d_ref = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=True, params_dic={},
-                                                       name='DTI_Drug_Representation')(model_d_ref)
+        model_d_ref = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=True, params_dic=params_dic,
+                                                       use_bias=False, name='DTI_Drug_Representation')(model_d_ref)
         model_p_orig = Concatenate(axis=1)([model_d_ref, model_p_orig])
 
+        #model_p_orig = Lambda(lambda a: K.clip(a, -1.0, 1.0))(model_p_orig)
+        '''
+        model_d_ref = RepeatVector(1)(model_ds[-1])
+        model_p_orig = Concatenate(axis=1)([model_d_ref, model_p_orig])
+        model_p_orig = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=False, params_dic=params_dic,
+                                                       name='DTI_Pharm_Representation')(model_p_orig)
+        '''
         # Positional embedding
         model_p_pos = Lambda(self.position_embedding, output_shape=(None, hots_dimension),
               name="HoTS_Protein_Drug_Pos_embedding")(model_p_orig)
         model_p_orig = Add()([model_p_orig, model_p_pos])
-        model_p_orig = Dropout(dropout)(model_p_orig)
+        #model_p_orig = Concatenate(axis=1)([model_d_ref, model_p_orig])
+        #model_p_orig = Dropout(dropout)(model_p_orig)
 
         # Mask preparing
         input_mask = Input(shape=(None,))
@@ -93,7 +104,7 @@ class HoTSModel(object):
             model_p_attn = self.self_attention(protein_layer_size, activation, dropout, params_dic,
                                                 name=pre+'Protein_attention_%d_%d'%(protein_layer_size, z),
                                                 n_heads=hots_n_heads)(model_p_input, model_p_input, model_p_input, attention_mask)
-            model_p_attn = Add()([model_p, model_p_attn])
+            model_p_attn = Add(name=pre + "attention_added_%d" % z)([model_p, model_p_attn])
 
             # Position-wise Feed-forward
             model_p_ff = self.time_distributed_dense_norm(protein_layer_size*4, activation,
@@ -102,22 +113,22 @@ class HoTSModel(object):
             model_p_ff = self.time_distributed_dense_norm(protein_layer_size, None, dropout=dropout, norm=False,
                                                name=pre+"Protein_feed_forward_%d_2"%(z),
                                              params_dic=params_dic)(model_p_ff)
-            model_p_attended = Add()([model_p_ff, model_p_attn])
+            model_p_attended = Add(name=pre + "feed_forward_added_%d" % z)([model_p_ff, model_p_attn])
             model_p_attended = Dropout(dropout)(model_p_attended)
             model_p = model_p_attended
             # Compound token
             model_pd = Lambda(lambda a: a[:, 0, :], name=pre+"DTI_representation_%d"%z)(model_p)
             model_pds.append(model_pd)
-            # Protein embedding
+            # Protein encoding
             model_phots = Lambda(lambda a: a[:, 1:, :], name=pre+"Protein_grid_%d"%z)(model_p)
             model_ps.append(model_phots)
 
         # Residual connection
         model_ph_residual = model_p_interaction
-        model_ph_residual = MaxPool1D(protein_grid_size, padding='same', name="HoTS_Protein_residual_grid")(
-            model_ph_residual)
         model_ph_residual = self.time_distributed_dense_norm(hots_dimension, activation, name="HoTS_Protein_resiual",
                                                             dropout=dropout, params_dic=params_dic, norm=True)(model_ph_residual)
+        model_ph_residual = MaxPool1D(protein_grid_size, padding='same', name="HoTS_Protein_residual_grid")(
+            model_ph_residual)
         # From Transformer for BR prediction
         model_ph = model_ps[n_stack_hots_prediction-1]
         #model_ph = self.dense_norm(hots_dimension, activation, name="HoTS_Pharm_dense", dropout=dropout,
@@ -134,8 +145,12 @@ class HoTSModel(object):
                                                          name="HoTS_last_dense_%d_%d"%(hots_fc_layer,z), dropout=dropout,
                                                          params_dic=params_dic)(input_layer_hots)
                 input_layer_hots = model_hots_dense
+
         model_hots = self.time_distributed_dense_norm((len(anchors))*3, name='HoTS_pooling_feature_last', dropout=0.0,
-                                                     activation='sigmoid', params_dic=params_dic, norm=False)(model_hots_dense)
+                                                     activation='sigmoid', params_dic=params_dic, norm=True)(model_hots_dense)
+        model_ph_mask = Permute([2, 1])(RepeatVector(len(anchors)*3)(input_mask))
+        model_ph_mask = Lambda(lambda a: a[:, 1:, :])(model_ph_mask)
+        model_hots = Multiply()([model_hots, model_ph_mask])
 
         model_hots = Reshape((-1, len(anchors), 3), name='HoTS_pooling_reshape')(model_hots)
 
@@ -144,11 +159,12 @@ class HoTSModel(object):
         model_p = self.dense_norm(hots_dimension, activation, name="DTI_Protein_residual",
                                   dropout=dropout, params_dic=params_dic, norm=True)(model_p)
         # Drug Residual
-        model_d = model_ds[-1]
+        model_d = model_ds[-1] #self.dense_norm(hots_dimension, activation, name="DTI_Drug_dense", dropout=dropout,
+                               #    params_dic=params_dic, norm=True)(model_ds[-1])
 
         # Transformer for DTI prediction
-        model_pd = model_pds[-1]#self.dense_norm(hots_dimension*2, activation, name="DTI_Pharm_dense", dropout=dropout,
-                                #   params_dic=params_dic, norm=True)(model_pds[-1])#BatchNormalization()(model_pds[-1])
+        model_pd = model_pds[-1]#self.dense_norm(hots_dimension, activation, name="DTI_Pharm_dense", dropout=dropout,
+                   #                params_dic=params_dic, norm=True)(model_pds[-1])#BatchNormalization()(model_pds[-1])
 
         model_t = Concatenate()([model_pd, model_p, model_d])#Concatenate()([model_pd, model_p, model_d]) # Ablation No Attention : Concatenate()([model_p, model_d]) # Ablation No Residual: Concatenate()([model_d, model_p])
 
@@ -173,6 +189,7 @@ class HoTSModel(object):
 
     def PLayer(self, size, filters, activation, dropout, params_dic, norm=True, name=""):
         def f(input):
+
             if norm:
                 model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)
                 model_conv = WeightNormalization(model_conv, name=name+"_norm")(input)
@@ -181,6 +198,10 @@ class HoTSModel(object):
             else:
                 model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)(input)
             model_conv = Activation(activation, name=name+"_activation")(model_conv)
+            '''
+            if norm:
+                model_conv = LayerNormalization(name=name + "_norm")(model_conv)
+            '''
             model_conv = Dropout(dropout, name=name+"_dropout")(model_conv)
             return model_conv
         return f
@@ -202,13 +223,13 @@ class HoTSModel(object):
             return densed
         return dense_func
 
-    def time_distributed_dense_norm(self, units, activation, name=None, dropout=0.0, params_dic=None, norm=True, bias=True):
+    def time_distributed_dense_norm(self, units, activation, name=None, dropout=0.0, params_dic=None, norm=True, use_bias=True):
         def dense_func(input):
             if norm:
                 densed = LayerNormalization(name=name + "_norm")(input)
-                densed = Dense(units, name=name, use_bias=bias, **params_dic)(densed)
+                densed = Dense(units, name=name, use_bias=use_bias, **params_dic)(densed)
             else:
-                densed = Dense(units, name=name, use_bias=bias, **params_dic)(input)
+                densed = Dense(units, name=name, use_bias=use_bias, **params_dic)(input)
             densed = Activation(activation, name=name+"_activation")(densed)
             densed = Dropout(dropout, name=name+"_dropout")(densed)
             return densed

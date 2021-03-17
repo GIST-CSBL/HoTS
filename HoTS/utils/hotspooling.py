@@ -1,5 +1,6 @@
 import numpy as np
 from multiprocessing import Pool
+from HoTS.utils import IoU
 
 class HoTSPooling(object):
     """
@@ -25,15 +26,20 @@ class HoTSPooling(object):
         suppressed_index_result = []
         while np.any(hots_indice):
             maximum_prediction = hots_indice[0]
-            suppressed_index_result.append((int(maximum_prediction[0]), int(maximum_prediction[1]), maximum_prediction[2]))
+            result_start = maximum_prediction[0]
+            result_end = maximum_prediction[1]
             pop_index = []
             for i, prediction in enumerate(hots_indice):
                 iou = IoU(maximum_prediction[0], maximum_prediction[1], prediction[0], prediction[1], mode='se')
                 if iou >= 0.5:
                     pop_index.append(i)
+                    result_start = min(result_start, prediction[0])
+                    result_end = max(result_end, prediction[1])
+            suppressed_index_result.append((int(result_start), int(result_end), maximum_prediction[2]))
             mask = np.ones_like(range(len(hots_indice)), dtype=bool)
             mask[pop_index] = False
             hots_indice = hots_indice[mask]
+
         return suppressed_index_result
 
     def hots_grid_to_subsequence(self, sequences, predicted_hots, th=0.):

@@ -226,7 +226,7 @@ class HoTS(object):
                                                                 batch_size=batch_size)
         mean_ap = AP_calculator(index_feature, predicted_index, pdb_starts, pdb_ends,
                       min_value=self.anchors[0], max_value=int(self.anchors[-1]*np.e)).get_AP()
-
+        '''
         max_len = int(np.ceil(len(protein_feature[0])/20)*20)
         protein_feature_0 = sequence.pad_sequences([protein_feature[0]], maxlen=max_len, padding='post')
         drug_feature_0 = np.stack([drug_feature[0]])
@@ -241,7 +241,7 @@ class HoTS(object):
         #print(attention_layer_1.predict([drug_feature_0,protein_feature_0]))
         #print(attention_layer_2.predict([drug_feature_0,protein_feature_0]))
         #print(attention_layer_3.predict([drug_feature_0,protein_feature_0]))
-
+        '''
         print("\tAP : ", mean_ap)
         print("=================================================")
 
