@@ -29,13 +29,72 @@ Moreover, we added compound token before protein grids as ``<CLS>`` token is add
 
 Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 
+## License
+
+
+DeepConv-DTI follow [GPL 3.0v license](LICENSE). Therefore, DeepConv-DTI is open source and free to use for everyone.
+
+However, compounds which are found by using DeepConv-DTI follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purpose or individual research, but restricted for commecial use.
+
+## Contact
+
+hjnam@gist.ac.kr
+
+dlsrnsladlek@gist.ac.kr
+
+
 ## Overview Figure
 
-![OverviewFigure](Figures/Fig_1.jpg){: width="80%" height="80%"}
+![OverviewFigure](Figures/Fig_1.jpg)
 
 ## Usage
 
 ```
+usage: run_HoTS.py [-h] [--validation-dti-dir VALIDATION_DTI_DIR]
+                   [--validation-drug-dir VALIDATION_DRUG_DIR]
+                   [--validation-protein-dir VALIDATION_PROTEIN_DIR]
+                   [--validation-hots-dir VALIDATION_HOTS_DIR]
+                   [--window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]]]
+                   [--n-filters N_FILTERS]
+                   [--drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]]]
+                   [--hots-dimension HOTS_DIMENSION] [--n-heads N_HEADS]
+                   [--n-transformers-hots N_TRANSFORMERS_HOTS]
+                   [--n-transformers-dti N_TRANSFORMERS_DTI]
+                   [--hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]]
+                   [--dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]]
+                   [--anchors ANCHORS [ANCHORS ...]] [--grid-size GRID_SIZE]
+                   [--learning-rate LEARNING_RATE] [--n-warm-up N_WARM_UP]
+                   [--n-epochs N_EPOCHS] [--hots-ratio HOTS_RATIO]
+                   [--retina-loss RETINA_LOSS]
+                   [--confidence-loss CONFIDENCE_LOSS]
+                   [--regression-loss REGRESSION_LOSS]
+                   [--negative-loss NEGATIVE_LOSS] [--drug-len DRUG_LEN]
+                   [--radius RADIUS] [--activation ACTIVATION]
+                   [--dropout DROPOUT] [--batch-size BATCH_SIZE]
+                   [--decay DECAY] [--save-model SAVE_MODEL]
+                   dti_dir drug_dir protein_dir hots_dir
+
+    This Python script is used to train, validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
+    Deep learning model will be built by Keras with tensorflow.
+    You can set almost hyper-parameters as you want, See below parameter description
+    DTI, drug and protein data must be written as csv file format. And feature should be tab-delimited format for script to parse data.
+    And for HoTS, Protein Sequence, binding region and SMILES are need in tsv. you can check the format in sample data. 
+
+    Requirement
+    ============================ 
+    tensorflow == 1.12.0 
+    keras == 2.2.4 
+    numpy 
+    pandas 
+    scikit-learn 
+    tqdm 
+    ============================
+
+    contact : dlsrnsladlek@gist.ac.kr
+              hjnam@gist.ac.kr
+
+    
+
 positional arguments:
   dti_dir               Training DTI information [Compound_ID, Protein_ID,
                         Label]
@@ -46,15 +105,16 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --validation-dti-dir VALIDATION_DTI_DIR
-                        Validation dti [Compound_ID, Protein_ID, Label]
+                        Test dti [Compound_ID, Protein_ID, Label]
   --validation-drug-dir VALIDATION_DRUG_DIR
-                        Validation drug information [Compound_ID, SMILES]
+                        Test drug information [Compound_ID, SMILES]
   --validation-protein-dir VALIDATION_PROTEIN_DIR
-                        Validation Protein information [Protein_ID, Sequence]
+                        Test Protein information [Protein_ID, Sequence]
   --validation-hots-dir VALIDATION_HOTS_DIR
-                        Validation Binding region information [Sequence, binding_region]
+                        Validation Binding region information [Sequence,
+                        binding_region]
   --window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]], -w [WINDOW_SIZES [WINDOW_SIZES ...]]
-                        Window sizes for Conv1D
+                        Window sizes for model
   --n-filters N_FILTERS, -f N_FILTERS
                         Number of filters for convolution layer
   --drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]], -c [DRUG_LAYERS [DRUG_LAYERS ...]]
@@ -63,15 +123,21 @@ optional arguments:
                         Dimension of HoTS, D_model for transformer
   --n-heads N_HEADS     Number of heads for multi-head attention
   --n-transformers-hots N_TRANSFORMERS_HOTS
-                        Number of transformers for BR prediction, must be less than n-transformers-dti
+                        Number of transformers for BR prediction, must be less
+                        than n-transformers-dti
   --n-transformers-dti N_TRANSFORMERS_DTI
                         Number of transformers for DTI prediction
   --hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and target layer
+                        Dense layers for concatenated layers of drug and
+                        target layer
   --dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and target layer
+                        Dense layers for concatenated layers of drug and
+                        target layer
   --anchors ANCHORS [ANCHORS ...]
+                        Basic anchors to predict BR
   --grid-size GRID_SIZE
+                        Grid size to pool protein feature from convolution
+                        results
   --learning-rate LEARNING_RATE, -r LEARNING_RATE
                         Learning late for training
   --n-warm-up N_WARM_UP
@@ -79,7 +145,8 @@ optional arguments:
   --n-epochs N_EPOCHS, -e N_EPOCHS
                         The number of epochs for training or validation
   --hots-ratio HOTS_RATIO
-                        The number of HoTS training ratio per DTI training epoch
+                        The number of HoTS training ratio per DTI training
+                        epoch
   --retina-loss RETINA_LOSS
                         Retina loss weight
   --confidence-loss CONFIDENCE_LOSS
@@ -87,6 +154,21 @@ optional arguments:
   --regression-loss REGRESSION_LOSS
                         Regression loss weight for BR prediction
   --negative-loss NEGATIVE_LOSS
+                        Negative loss weight for BR prediction
+  --drug-len DRUG_LEN, -L DRUG_LEN
+                        Drug vector length
+  --radius RADIUS, -R RADIUS
+                        Morgan fingerprints raidus
+  --activation ACTIVATION, -a ACTIVATION
+                        Activation function of model
+  --dropout DROPOUT, -D DROPOUT
+                        Dropout ratio
+  --batch-size BATCH_SIZE, -b BATCH_SIZE
+                        Batch size
+  --decay DECAY, -y DECAY
+                        Learning rate decay
+  --save-model SAVE_MODEL, -m SAVE_MODEL
+                        Path to save model
 ```
 
 

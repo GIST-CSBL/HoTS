@@ -5,23 +5,23 @@ from HoTS.utils.build_features import *
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="""
-    This Python script is used to train, validate, test deep learning model for prediction of drug-target interaction (DTI)\n
-    Deep learning model will be built by Keras with tensorflow.\n
-    You can set almost hyper-parameters as you want, See below parameter description\n
-    DTI, drug and protein data must be written as csv file format. And feature should be tab-delimited format for script to parse data.\n
-    And for HoTS, Protein Sequence, binding region and SMILES are need in tsv. you can check the format in sample data.\n
-    requirement\n
+    This Python script is used to train, validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
+    Deep learning model will be built by Keras with tensorflow.
+    You can set almost hyper-parameters as you want, See below parameter description
+    DTI, drug and protein data must be written as csv file format. And feature should be tab-delimited format for script to parse data.
+    And for HoTS, Protein Sequence, binding region and SMILES are need in tsv. you can check the format in sample data. \n
+    Requirement
+    ============================ 
+    tensorflow == 1.12.0 
+    keras == 2.2.4 
+    numpy 
+    pandas 
+    scikit-learn 
+    tqdm 
     ============================\n
-    tensorflow == 1.12.0\n
-    keras == 2.2.4\n
-    numpy\n
-    pandas\n
-    scikit-learn\n
-    tqdm\n
-    ============================\n
-    \n
-    contact : dlsrnsladlek@gist.ac.kr\n
-    """)
+    contact : dlsrnsladlek@gist.ac.kr
+              hjnam@gist.ac.kr\n
+    """, formatter_class=argparse.RawDescriptionHelpFormatter)
     # train_params
     parser.add_argument("dti_dir", help="Training DTI information [Compound_ID, Protein_ID, Label]")
     parser.add_argument("drug_dir", help="Training drug information [Compound_ID, SMILES]")
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     parser.add_argument("--dti-fc-layers",  help="Dense layers for concatenated layers of drug and target layer",
                         default=[256, 64], nargs="*", type=int)
 
-    parser.add_argument("--anchors", default=[9], nargs="+", type=int)
-    parser.add_argument("--grid-size", default=20, type=int)
+    parser.add_argument("--anchors", default=[9], nargs="+", type=int, help="Basic anchors to predict BR")
+    parser.add_argument("--grid-size", default=20, type=int, help="Grid size to pool protein feature from convolution results")
 
     # training_params
     parser.add_argument("--learning-rate", '-r', help="Learning late for training", default=1e-4, type=float)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch-size", "-b", help="Batch size", default=16, type=int)
     parser.add_argument("--decay", "-y", help="Learning rate decay", default=1e-4, type=float)
     # output_params
-    parser.add_argument("--save-model", "-m", help="save model", type=str)
+    parser.add_argument("--save-model", "-m", help="Path to save model", type=str)
 
     args = parser.parse_args()
 
