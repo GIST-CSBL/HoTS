@@ -1,4 +1,4 @@
-# HoTS: Sequence based prediction of binding region and drug-target interaction.
+# HoTS: Sequence based prediction of binding regions and drug-target interactions
 
 ## Introduction
 
@@ -32,9 +32,9 @@ Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 ## License
 
 
-DeepConv-DTI follow [GPL 3.0v license](LICENSE). Therefore, DeepConv-DTI is open source and free to use for everyone.
+HoTS follow [GPL 3.0v license](LICENSE). Therefore, HoTS is open source and free to use for everyone.
 
-However, compounds which are found by using DeepConv-DTI follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purpose or individual research, but restricted for commecial use.
+However, compounds which are found by using HoTS follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purpose or individual research, but restricted for commecial use.
 
 ## Contact
 
