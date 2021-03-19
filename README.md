@@ -11,10 +11,11 @@ This model gives some advantages for prediction, such as
   * Model becomes more informative and interpretable than model using global feature
 
 DeepConv-DTI and DeepAffinity show that deep learning model with protein sequence actually capture local residue pattern participating in interaction with ligands.
-Therefore, we can hypothesize that increasing ability to capture local residue patterns will also increase performance of prediction.
-Thus, how can increase ability to capture local residue patterns of drug-target prediction model?
-In DeepConv-DTI, variety size of convolutional neural networks (CNN) play role of capturing local residue patterns. While the bottom layers organize queried local residue patterns to predict DTIs.
-It means that training and updating weights of CNN layers to capture local residue pattern will increase performance of DTI prediction.
+Therefore, we can hypothesize that increasing ability to capture important local residue patterns will also increase performance of prediction.
+But, how can increase ability to capture important local motifs for drug-target prediction model?
+
+In DeepConv-DTI, variety size of convolutional neural networks (CNN) play role of capturing local residue patterns
+Then, we can explicitly train CNN and further layers to concentrate on binding information.
 
 So, we built model on protein sequence to predict ``binding region``, which is called **Highlight on Protein Sequence (HoTS)**.
 We predict ``binding regions`` of protein in the way of object detection in image processing field.
