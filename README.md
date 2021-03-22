@@ -46,7 +46,7 @@ dlsrnsladlek@gist.ac.kr
 
 ## Overview Figure
 
-![OverviewFigure](Figures/Fig_1.jpg)
+![OverviewFigure](Figures/Fig1.jpg)
 
 ## Usage
 
