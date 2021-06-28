@@ -66,7 +66,7 @@ class AP_calculator(object):
         pred_calls = []
         #precisions = []
         #recalls = []
-        pool = Pool(20)
+        pool = Pool(50)
         pred_ind_for_gt = [(pred_start, pred_end, self.true_inds[sample_ind], self.true_inds_called[sample_ind])
                            for sample_ind, pred_start, pred_end, score in self.pred_inds]
         call_results = pool.starmap(self.call_prediction_gt, pred_ind_for_gt)
@@ -87,16 +87,20 @@ class AP_calculator(object):
             recalls.append(self.get_n_called_true())
         '''
         self.precisions = np.array(precisions)/range(1, len(call_results)+1)
+        #self.precisions = np.triu(np.tile(self.precisions, (len(self.precisions), 1)), 0).max(axis=1)
         self.recalls = np.array(recalls)/self.n_true
-        for k in range(len(self.precisions)-2):
-            self.precisions[k] = max(self.precisions[k+1:])
+        #for k in range(len(self.precisions) - 2):
+        #    self.precisions[k] = max(self.precisions[k + 1:])
         interpolated_precisions = []
-        for i in range(11):
-            recall_ind = int((len(self.recalls) - 1) * (i/10))
-            precision = self.precisions[recall_ind]
+        interpolated_precisions.append(np.max(self.precisions))
+        for i in range(1, 10):
+            recall_ind = np.argmin(np.abs(self.recalls - (i/10)))
+            precision = np.max(self.precisions[recall_ind:])
             interpolated_precisions.append(precision)
-        print(interpolated_precisions)
-        ap = np.mean(interpolated_precisions)  # auc(recalls, precisions)
+        #interpolated_precisions.append(self.precisions[-1])
+        #print(interpolated_precisions)
+        #ap = np.mean(interpolated_precisions)  # auc(recalls, precisions)
+        ap = auc(self.recalls, self.precisions)
         return ap
 
 

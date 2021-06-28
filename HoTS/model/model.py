@@ -165,7 +165,7 @@ class HoTSModel(object):
         # Transformer for DTI prediction
         model_pd = model_pds[-1]#self.dense_norm(hots_dimension, activation, name="DTI_Pharm_dense", dropout=dropout,
                    #                params_dic=params_dic, norm=True)(model_pds[-1])#BatchNormalization()(model_pds[-1])
-
+        #model_t = Concatenate()([model_p, model_d])
         model_t = Concatenate()([model_pd, model_p, model_d])#Concatenate()([model_pd, model_p, model_d]) # Ablation No Attention : Concatenate()([model_p, model_d]) # Ablation No Residual: Concatenate()([model_d, model_p])
 
         # DTI prediction

@@ -56,7 +56,7 @@ class HoTSLoss(object):
         w_loss = tf.abs(gt_w - pred_w) * self.reg_loss_weight * is_true
 
         grid_anchors = tf.cast(tf.reshape(self.anchors, [1, 1, len(self.anchors)]), tf.float32)
-
+        '''
         gt_c = tf.ones_like(gt_boxes[..., 0])*self.grid_size + gt_boxes[..., 0]*self.grid_size
         gt_w = tf.exp(gt_boxes[..., 1])*grid_anchors
         pred_c = tf.ones_like(pred_boxes[..., 0])*self.grid_size + pred_boxes[..., 0]*self.grid_size
@@ -66,7 +66,9 @@ class HoTSLoss(object):
         pred_min = pred_c - pred_w/2
         pred_max = pred_c + pred_w/2
         iou_loss = (1 - self.compute_iou(gt_min, gt_max, pred_min, pred_max)) * self.reg_loss_weight * is_true
-
+        c_loss = tf.square(gt_c - pred_c) * self.reg_loss_weight * is_true
+        w_loss = tf.square(gt_w - pred_w) * self.reg_loss_weight * is_true
+        '''
 
         # Retina
         pt = tf.maximum(pred_label, EPSILON)

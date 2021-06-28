@@ -8,13 +8,14 @@ class DataGeneratorDTI(object):
 
     """
     def __init__(self, train_drug, train_protein, train_label=None, batch_size=32,
-                 protein_encoder=None, compound_encoder=None, train=True, grid_size=10):
+                 protein_encoder=None, compound_encoder=None, train=True, grid_size=10, protein_max_len=2500):
         self.__batch_size = batch_size
         self.protein_encoder = protein_encoder
         self.compound_encoder = compound_encoder
         self.train = train
         self.n = len(train_drug)
         self.__grid_size = grid_size
+        self.protein_max_len = protein_max_len
         if train:
             permute_index = np.random.permutation(range(self.n))
         else:
@@ -48,7 +49,7 @@ class DataGeneratorDTI(object):
         proteins = self.__proteins[start_ind:end_ind]
         max_len = max([len(seq) for seq in proteins])
         units = self.__grid_size
-        max_len = int(np.ceil(max_len/units)*units)
+        max_len = min(int(np.ceil(max_len/units)*units), self.protein_max_len)
         protein_features = self.protein_encoder.pad(proteins, max_len=max_len)
         mask = np.zeros(shape=(end_ind - start_ind, int(np.ceil(max_len / self.__grid_size)) + 1))
         for i, protein in enumerate(proteins):

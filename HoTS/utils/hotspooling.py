@@ -19,7 +19,7 @@ class HoTSPooling(object):
         elif value > self.max_len:
             return int(self.max_len)
         else:
-            return int(value)
+            return int(np.round(value))
 
     def non_maxmimal_suppression(self, hots_indice):
         hots_indice = np.array(hots_indice)
