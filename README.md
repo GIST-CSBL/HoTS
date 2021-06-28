@@ -30,7 +30,7 @@ Moreover, as pointed in [studies](https://www.researchgate.net/publication/33508
 Our model utilized [Transformers](https://arxiv.org/abs/1706.03762) to model interdependency between sequential grids.
 Moreover, we added compound token before protein grids as ``<CLS>`` token is added to predict class of sentence. Transformer also will model interaction between protein and compound.
 
-Our model is depicted as [overview figure](Figures/Fig 1.jpg)
+Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 
 ## License
 
@@ -48,7 +48,7 @@ dlsrnsladlek@gist.ac.kr
 
 ## Overview Figure
 
-![OverviewFigure](Figures/Fig 1.jpg)
+![OverviewFigure](Figures/Fig_1.jpg)
 
 ## Usage
 
