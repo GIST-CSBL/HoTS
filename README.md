@@ -53,30 +53,6 @@ dlsrnsladlek@gist.ac.kr
 ## Usage
 
 ```
-usage: run_HoTS.py [-h] [--validation-dti-dir VALIDATION_DTI_DIR]
-                   [--validation-drug-dir VALIDATION_DRUG_DIR]
-                   [--validation-protein-dir VALIDATION_PROTEIN_DIR]
-                   [--validation-hots-dir VALIDATION_HOTS_DIR]
-                   [--window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]]]
-                   [--n-filters N_FILTERS]
-                   [--drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]]]
-                   [--hots-dimension HOTS_DIMENSION] [--n-heads N_HEADS]
-                   [--n-transformers-hots N_TRANSFORMERS_HOTS]
-                   [--n-transformers-dti N_TRANSFORMERS_DTI]
-                   [--hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]]
-                   [--dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]]
-                   [--anchors ANCHORS [ANCHORS ...]] [--grid-size GRID_SIZE]
-                   [--learning-rate LEARNING_RATE] [--n-warm-up N_WARM_UP]
-                   [--n-epochs N_EPOCHS] [--hots-ratio HOTS_RATIO]
-                   [--retina-loss RETINA_LOSS]
-                   [--confidence-loss CONFIDENCE_LOSS]
-                   [--regression-loss REGRESSION_LOSS]
-                   [--negative-loss NEGATIVE_LOSS] [--drug-len DRUG_LEN]
-                   [--radius RADIUS] [--activation ACTIVATION]
-                   [--dropout DROPOUT] [--batch-size BATCH_SIZE]
-                   [--decay DECAY] [--save-model SAVE_MODEL]
-                   dti_dir drug_dir protein_dir hots_dir
-
     This Python script is used to train, validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
     Deep learning model will be built by Keras with tensorflow.
     You can set almost hyper-parameters as you want, See below parameter description
@@ -90,90 +66,73 @@ usage: run_HoTS.py [-h] [--validation-dti-dir VALIDATION_DTI_DIR]
     numpy 
     pandas 
     scikit-learn 
-    tqdm 
+    tqdm
+    rdkit
     ============================
 
     contact : dlsrnsladlek@gist.ac.kr
               hjnam@gist.ac.kr
-
-    
-
-positional arguments:
-  dti_dir               Training DTI information [Compound_ID, Protein_ID,
-                        Label]
-  drug_dir              Training drug information [Compound_ID, SMILES]
-  protein_dir           Training protein information [Protein_ID, Sequence]
-  hots_dir              Training BR information [Sequence, binding_region]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --validation-dti-dir VALIDATION_DTI_DIR
-                        Test dti [Compound_ID, Protein_ID, Label]
-  --validation-drug-dir VALIDATION_DRUG_DIR
-                        Test drug information [Compound_ID, SMILES]
-  --validation-protein-dir VALIDATION_PROTEIN_DIR
-                        Test Protein information [Protein_ID, Sequence]
-  --validation-hots-dir VALIDATION_HOTS_DIR
-                        Validation Binding region information [Sequence,
-                        binding_region]
-  --window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]], -w [WINDOW_SIZES [WINDOW_SIZES ...]]
-                        Window sizes for model
-  --n-filters N_FILTERS, -f N_FILTERS
-                        Number of filters for convolution layer
-  --drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]], -c [DRUG_LAYERS [DRUG_LAYERS ...]]
-                        Dense layers for drugs
-  --hots-dimension HOTS_DIMENSION, -H HOTS_DIMENSION
-                        Dimension of HoTS, D_model for transformer
-  --n-heads N_HEADS     Number of heads for multi-head attention
-  --n-transformers-hots N_TRANSFORMERS_HOTS
-                        Number of transformers for BR prediction, must be less
-                        than n-transformers-dti
-  --n-transformers-dti N_TRANSFORMERS_DTI
-                        Number of transformers for DTI prediction
-  --hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and
-                        target layer
-  --dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and
-                        target layer
-  --anchors ANCHORS [ANCHORS ...]
-                        Basic anchors to predict BR
-  --grid-size GRID_SIZE
-                        Grid size to pool protein feature from convolution
-                        results
-  --learning-rate LEARNING_RATE, -r LEARNING_RATE
-                        Learning late for training
-  --n-warm-up N_WARM_UP
-                        The number of warming-up epochs
-  --n-epochs N_EPOCHS, -e N_EPOCHS
-                        The number of epochs for training or validation
-  --hots-ratio HOTS_RATIO
-                        The number of HoTS training ratio per DTI training
-                        epoch
-  --retina-loss RETINA_LOSS
-                        Retina loss weight
-  --confidence-loss CONFIDENCE_LOSS
-                        Confidence loss weight for BR prediction
-  --regression-loss REGRESSION_LOSS
-                        Regression loss weight for BR prediction
-  --negative-loss NEGATIVE_LOSS
-                        Negative loss weight for BR prediction
-  --drug-len DRUG_LEN, -L DRUG_LEN
-                        Drug vector length
-  --radius RADIUS, -R RADIUS
-                        Morgan fingerprints raidus
-  --activation ACTIVATION, -a ACTIVATION
-                        Activation function of model
-  --dropout DROPOUT, -D DROPOUT
-                        Dropout ratio
-  --batch-size BATCH_SIZE, -b BATCH_SIZE
-                        Batch size
-  --decay DECAY, -y DECAY
-                        Learning rate decay
-  --save-model SAVE_MODEL, -m SAVE_MODEL
-                        Path to save model
 ```
 
+# Input config specification
+
+Input config file should be `json` format and each value should be specified as following:
+
+## Input file paramters
+```
+    "dti_dir"			: Training DTI file path
+    "drug_dir"			: Training Compound file path
+    "protein_dir"		: Training Protein file path
+    "hots_dir"			: Training BR file path
+    "validation_dti_dir"	: Validation file path
+    "validation_drug_dir"	: Validaton file path
+    "validation_protein_dir"	: Validation file path
+    "validation_hots_dir"	: Validation BR file path
+```
+## Compound feature paramters
+```    
+    "drug_len"		: the number of bits for Morgan fingerprint
+    "radius"			" the size of radius for Morgan fingerprint
+```
+## Model shape parameters
+```
+    "window_sizes"		: Protein convolution window sizes (should be list of integers)
+    "n_filters"			: Convolution filter size
+    "drug_layers"		: Dense layers on compound fingerprint (should be list of integers)
+    "hots_dimension"		: Size of dimension for Transformer
+    "n_heads"			: the number of heads in Transformer
+    "n_transformers_hots"	: the number of Transformer blocks for BR prediction
+    "n_transformers_dti"	: the number of Transformer blocks for DTI prediction
+    "hots_fc_layers"		: Dense layers for BR prediction (should be list of integers)
+    "dti_fc_layers"		: Dense layers for DTI prediction (should be list of integers)
+    "anchors"			: Predifined widths (anchor without coord offset, should be list of integers)
+    "grid_size"			: Protein grid size
+```
+## Training parameters
+```
+    "learning_rate"		: Learning rate
+    "n_pretrain"		: the number of BR pre-training epochs
+    "n_epochs"		: the number of DTI training epochs
+    "hots_ratio"		: the number of BR training epochs per one DTI training
+    "activation"		: activation function of model
+    "dropout"			: Dropout rate
+    "batch_size"		: Training mini-batch size
+    "decay"			: Learning rate decay
+```
+## Loss parameters
+```
+    "retina_loss"		: Retina loss weight
+    "confidence_loss"		: Confidence loss weight for BR prediction
+    "regression_loss"		: Regression loss weight for BR prediction
+    "negative_loss"		: Negative loss eight for BR prediction
+``` 
+## Output paramters
+```
+    "output"			: Output file path, this script will result in 
+					{output}.config.json	: Model hyperparameter file
+					{output}.HoTS.h5	: BR prediction model weight file
+					{output}.DTI.h5	: DTI prediction model weight file
+```
 
 ### Example command
 
