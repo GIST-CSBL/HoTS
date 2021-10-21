@@ -50,6 +50,14 @@ dlsrnsladlek@gist.ac.kr
 
 ![OverviewFigure](Figures/Fig_1.jpg)
 
+## Environment set-up
+
+conda environment file `[environment.yml](environment.yml)` is provided
+
+``` 
+conda env create --name envname --file=environments.yml
+```
+
 ## Usage
 
 ```
@@ -141,3 +149,9 @@ defaults values are set as optimized parameter so you can train HoTS model with 
 ```
 python train_HoTS.py input_config.json
 ```
+
+with trained model, you can predict BRs and DTIs.
+
+Please read, this notebook
+
+[Prediction with trained model](Prediction_with_trained_model.ipynb)
