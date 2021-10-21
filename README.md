@@ -82,11 +82,11 @@ conda env create --name envname --file=environments.yml
               hjnam@gist.ac.kr
 ```
 
-# Input config specification
+## Input config specification
 
 Input config file should be `json` format and each value should be specified as following:
 
-## Input file paramters
+### Input file paramters
 ```
     "dti_dir"			: Training DTI file path
     "drug_dir"			: Training Compound file path
@@ -97,12 +97,12 @@ Input config file should be `json` format and each value should be specified as 
     "validation_protein_dir"	: Validation file path
     "validation_hots_dir"	: Validation BR file path
 ```
-## Compound feature paramters
+### Compound feature paramters
 ```    
     "drug_len"		: the number of bits for Morgan fingerprint
     "radius"			" the size of radius for Morgan fingerprint
 ```
-## Model shape parameters
+### Model shape parameters
 ```
     "window_sizes"		: Protein convolution window sizes (should be list of integers)
     "n_filters"			: Convolution filter size
@@ -116,7 +116,7 @@ Input config file should be `json` format and each value should be specified as 
     "anchors"			: Predifined widths (anchor without coord offset, should be list of integers)
     "grid_size"			: Protein grid size
 ```
-## Training parameters
+### Training parameters
 ```
     "learning_rate"		: Learning rate
     "n_pretrain"		: the number of BR pre-training epochs
@@ -134,7 +134,7 @@ Input config file should be `json` format and each value should be specified as 
     "regression_loss"		: Regression loss weight for BR prediction
     "negative_loss"		: Negative loss eight for BR prediction
 ``` 
-## Output paramters
+### Output paramters
 ```
     "output"			: Output file path, this script will result in 
 					{output}.config.json	: Model hyperparameter file
@@ -142,7 +142,7 @@ Input config file should be `json` format and each value should be specified as 
 					{output}.DTI.h5	: DTI prediction model weight file
 ```
 
-### Example command
+## Example command
 
 defaults values are set as optimized parameter so you can train HoTS model with following command
  
