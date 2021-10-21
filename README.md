@@ -139,13 +139,5 @@ Input config file should be `json` format and each value should be specified as 
 defaults values are set as optimized parameter so you can train HoTS model with following command
  
 ```
-python run_HoTS.py ./SampleData/DTI/Training/Training_DTI_Sample.csv \
-                 ./SampleData/DTI/Training/Training_Compound_Sample.csv \ 
-                 ./SampleData/DTI/Training/Training_Protein_Sample.csv \
-                 ./SampleData/HoTS/Training_HoTS.tsv \ 
-                 --validation-dti-dir  ./SampleData/DTI/Validation/Validation_DTI.csv \
-                 --validation-drug-dir ./SampleData/DTI/Validation/Validation_Compound.csv \
-                 --validation-protein-dir ./SampleData/DTI/Validation/Validation_Protein.csv \
-                 --validation-hots-dir ./SampleData/HoTS/Validation_HoTS.tsv \ 
-                 -m ./Saved_model
+python train_HoTS.py input_config.json
 ```

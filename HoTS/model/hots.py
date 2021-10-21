@@ -225,7 +225,7 @@ class HoTS(object):
             pdb_starts = [0]*len(drug_feature)
         if not pdb_ends:
             pdb_ends = [10000]*len(drug_feature)
-        predicted_score, predicted_index = self.HoTS_prediction(protein_feature, drug_feature,
+        predicted_score, predicted_index = self.HoTS_prediction(drug_feature, protein_feature,
                                                                 batch_size=batch_size)
         mean_ap = AP_calculator(index_feature, predicted_index, pdb_starts, pdb_ends,
                       min_value=self.anchors[0], max_value=int(self.anchors[-1]*np.e)).get_AP()
@@ -259,7 +259,7 @@ class HoTS(object):
 
     def HoTS_visualization(self, drug_feature, protein_feature, sequence, pdb_starts=None, pdb_ends=None, print_score=True,
                            index_feature=None, protein_names=None, line_length=100, th=0.75, batch_size=32, output_file=None, **kwargs):
-        predicted_score, predicted_index = self.HoTS_prediction(protein_feature, drug_feature, th=th,
+        predicted_score, predicted_index = self.HoTS_prediction(drug_feature, protein_feature, th=th,
                                                                 batch_size=batch_size)
         print("Prediction with %f"%th)
         if not pdb_starts:
@@ -421,7 +421,7 @@ class HoTS(object):
             self.model_hots.compile(optimizer=self.opt_hots, loss=self.hots_loss.compute_hots_loss)
 
 
-    def HoTS_prediction(self, protein_feature, drug_feature, th=0., batch_size=32, **kwargs):
+    def HoTS_prediction(self, drug_feature, protein_feature, th=0., batch_size=32, **kwargs):
         test_n_steps = int(np.ceil(len(protein_feature)/batch_size))
         test_gen = DataGeneratorHoTS(protein_feature, ind_label=None, ligand=drug_feature, name=None, anchors=self.anchors,
                                      batch_size=batch_size, train=False, shuffle=False, compound_encoder=self.compound_encoder,
