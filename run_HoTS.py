@@ -99,16 +99,17 @@ if __name__ == '__main__':
                                         with_label=True, compound_encoder=compound_encoder, protein_encoder=protein_encoder)
         parsed_data.update({"Validation_DTI":validation_dti})
     if args.validation_hots_dir:
-        validation_hots = parse_HoTS_data(args.validation_hots_dir, pdb_bound=True,
+        validation_hots = parse_HoTS_data(args.validation_hots_dir, pdb_bound=False,
                                           compound_encoder=compound_encoder, protein_encoder=protein_encoder)
         parsed_data.update({"Validation_HoTS": validation_hots})
 
     parsed_data.update({
         "dti_dataset":parse_DTI_data(args.dti_dir, args.drug_dir, args.protein_dir,
                                      with_label=True, compound_encoder=compound_encoder, protein_encoder=protein_encoder)})
-    training = parse_HoTS_data(args.hots_dir, pdb_bound=True,
+    training = parse_HoTS_data(args.hots_dir, pdb_bound=False,
                                compound_encoder=compound_encoder, protein_encoder=protein_encoder)
     parsed_data.update({"hots_dataset": training})
+    print(parsed_data.keys())
 
     dti_model.training(n_epoch=args.n_epochs, batch_size=args.batch_size, hots_training_ratio=args.hots_ratio, hots_warm_up_epoch=args.n_warm_up,
                        negative_loss_weight=args.negative_loss, retina_loss_weight=args.retina_loss, conf_loss_weight=args.confidence_loss,
