@@ -52,7 +52,7 @@ dlsrnsladlek@gist.ac.kr
 
 ## Environment set-up
 
-conda environment file `[environment.yml](environment.yml)` is provided
+conda environment file [environment.yml](environment.yml) is provided
 
 ``` 
 conda env create --name envname --file=environments.yml
