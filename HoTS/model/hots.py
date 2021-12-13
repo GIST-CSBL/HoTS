@@ -50,7 +50,7 @@ class HoTS(object):
         self.dti_file = None
         self.hots_validation_results = {}
         self.dti_validation_results = {}
-        print("Hot Model inititlization done!")
+        print("Hots model initialization done!")
 
     def build_model(self, dropout=0.1, drug_layers=(1024,512), protein_strides = (10,15,20,25), filters=64,
                  hots_dimension=64, n_stack_hots_prediction=0,
@@ -121,7 +121,7 @@ class HoTS(object):
             print("Given hyperparamters are loaded")
             print("")
             for key, value in class_dict.items():
-                print("{0:20}: " % key, value)
+                print("{0:20}: ".format(key), value)
             print(" ")
             self.build_model(**class_dict)
             #self.summary()
