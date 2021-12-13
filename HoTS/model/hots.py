@@ -118,7 +118,7 @@ class HoTS(object):
             f = open(model_config, encoding="UTF-8")
             class_dict = json.loads(f.read())
             f.close()
-            print("Given hyperparamters are loaded")
+            print("Given hyperparamters in %s are loaded"%model_config)
             print("")
             for key, value in class_dict.items():
                 print("{0:20}: ".format(key), value)
