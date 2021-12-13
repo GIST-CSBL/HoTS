@@ -50,6 +50,7 @@ class HoTS(object):
         self.dti_file = None
         self.hots_validation_results = {}
         self.dti_validation_results = {}
+        print("Hot Model inititlization done!")
 
     def build_model(self, dropout=0.1, drug_layers=(1024,512), protein_strides = (10,15,20,25), filters=64,
                  hots_dimension=64, n_stack_hots_prediction=0,
@@ -83,7 +84,8 @@ class HoTS(object):
                                 protein_layers=self.protein_layers,drug_vec=self.drug_vec, drug_len=self.drug_len, anchors=self.anchors,
                                hots_n_heads=self.hots_n_heads, n_stack_hots_prediction=self.n_stack_hots_prediction)
         self.model_hots, self.model_t = hots_model.get_model_hots(), hots_model.get_model_t()
-        print(self.__dict__)
+        for key, value in self.__dict__.items():
+            print("\t%s\t\t: "%key, value)
         #K.get_session().run(tf.global_variables_initializer())
 
     def get_model(self):
@@ -97,7 +99,6 @@ class HoTS(object):
         model_hots = class_dict.pop("model_hots")
         if model_config is not None:
             import json
-            print(class_dict)
             class_dict.pop("protein_encoder")
             class_dict.pop("compound_encoder")
             class_dict.pop("hots_loss")
