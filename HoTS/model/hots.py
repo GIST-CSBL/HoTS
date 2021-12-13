@@ -84,8 +84,6 @@ class HoTS(object):
                                 protein_layers=self.protein_layers,drug_vec=self.drug_vec, drug_len=self.drug_len, anchors=self.anchors,
                                hots_n_heads=self.hots_n_heads, n_stack_hots_prediction=self.n_stack_hots_prediction)
         self.model_hots, self.model_t = hots_model.get_model_hots(), hots_model.get_model_t()
-        for key, value in self.__dict__.items():
-            print("\t%s\t\t: "%key, value)
         #K.get_session().run(tf.global_variables_initializer())
 
     def get_model(self):
@@ -120,7 +118,11 @@ class HoTS(object):
             f = open(model_config, encoding="UTF-8")
             class_dict = json.loads(f.read())
             f.close()
-            print(class_dict)
+            print("Given hyperparamters are loaded")
+            print("")
+            for key, value in class_dict.items():
+                print("{0:20}: " % key, value)
+            print(" ")
             self.build_model(**class_dict)
             #self.summary()
             hots_file = class_dict["hots_file"]
