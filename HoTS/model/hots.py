@@ -128,11 +128,11 @@ class HoTS(object):
             hots_file = class_dict["hots_file"]
             self.model_hots.load_weights(hots_file)
             #self.model_hots = models.load_model(hots_file)
-            print("\tHoTS Model loaded at %s"%hots_file)
+            print("\tHoTS Model is loaded from %s"%hots_file)
             dti_file = class_dict["dti_file"]
             self.model_t.load_weights(dti_file)
             #self.model_t = models.load_model(dti_file)
-            print("\tDTI Model loaded at %s"%dti_file)
+            print("\tDTI Model is loaded from %s"%dti_file)
         else:
             if hots_file is not None:
                 self.model_hots.load_weights(hots_file)
