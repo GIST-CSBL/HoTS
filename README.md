@@ -99,8 +99,8 @@ Input config file should be `json` format and each value should be specified as 
 ```
 ### Compound feature paramters
 ```    
-    "drug_len"		: the number of bits for Morgan fingerprint
-    "radius"			" the size of radius for Morgan fingerprint
+    "drug_len"		        : the number of bits for Morgan fingerprint
+    "radius"			: the size of radius for Morgan fingerprint
 ```
 ### Model shape parameters
 ```
@@ -120,7 +120,7 @@ Input config file should be `json` format and each value should be specified as 
 ```
     "learning_rate"		: Learning rate
     "n_pretrain"		: the number of BR pre-training epochs
-    "n_epochs"		: the number of DTI training epochs
+    "n_epochs"		        : the number of DTI training epochs
     "hots_ratio"		: the number of BR training epochs per one DTI training
     "activation"		: activation function of model
     "dropout"			: Dropout rate
