@@ -11,7 +11,7 @@ This model gives some advantages for prediction, such as
   * Model becomes more informative and interpretable than model using global feature
 
 DeepConv-DTI and DeepAffinity show that deep learning model with protein sequence actually capture local residue pattern participating in interaction with ligands.
-Therefore, we can hypothesize that increasing ability to capture important local residue patterns will also increase performance of prediction.
+Therefore, we can hypothesize that increasing ability to capture important interacting motifs  will also increase performances of DTI prediction.
 But, how can increase ability to capture important local motifs for drug-target prediction model?
 
 In DeepConv-DTI, variety size of convolutional neural networks (CNN) play role of capturing local residue patterns
@@ -21,9 +21,9 @@ So, we built model on protein sequence to predict ``binding region (BR)``, which
 We predict BR of protein in the way of object detection in image processing field.
 
 We refers **BR** as consecutive subsequence including ``binding pockets/sites (binding information, BI)`` interacting with ligand in protein-ligand complex.
-Procedure of generating BR from BI is summarized in [ipython notbook](SampleData/HoTS/Parsing_scPDB_for_HoTS.ipynb) 
+BR generation procedure is summarized in [ipython notbook](SampleData/HoTS/Parsing_scPDB_for_HoTS.ipynb) 
 
-By predicting `BR, performance of DTI prediction increase than previous model [DeepConv-DTI](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007129).
+By predicting BR, performance of DTI prediction increase from previous model [DeepConv-DTI](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007129).
 
 Moreover, as pointed in [studies](https://www.researchgate.net/publication/335085389_Improved_fragment_sampling_for_ab_initio_protein_structure_prediction_using_deep_neural_networks), inter-dependency between protein moitifs must be considered for better respresentation
 
@@ -35,7 +35,7 @@ Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 ## License
 
 
-HoTS follow [GPL 3.0v license](LICENSE). Therefore, HoTS is open source and free to use for everyone.
+HoTS follows [GPL 3.0v license](LICENSE). Therefore, HoTS is open source and free to use for everyone.
 
 However, compounds which are found by using HoTS follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purpose or individual research, but restricted for commecial use.
 
@@ -152,6 +152,6 @@ python train_HoTS.py input_config.json
 
 with trained model, you can predict BRs and DTIs.
 
-Please read, this notebook
+Please read, this notebook, which summarize and explain functions in HoTS.
 
 [Prediction with trained model](Prediction_with_trained_model.ipynb)
