@@ -8,14 +8,15 @@ dependencies:
   - _tflow_select=2.1.0=gpu
   - absl-py=0.13.0=py36h06a4308_0
   - astor=0.8.1=py36h06a4308_0
+  - biopython=1.79=py36h8f6f2f9_0
   - blas=1.0=mkl
   - boost=1.74.0=py36h355b2fd_3
   - boost-cpp=1.74.0=h9359b55_0
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.17.1=h27cfd23_0
-  - ca-certificates=2021.9.30=h06a4308_1
+  - ca-certificates=2021.10.8=ha878542_0
   - cairo=1.16.0=h9f066cc_1006
-  - certifi=2020.12.5=py36h06a4308_0
+  - certifi=2016.9.26=py36_0
   - coverage=5.5=py36h27cfd23_2
   - cudatoolkit=9.2=0
   - cudnn=7.6.5=cuda9.2_0
@@ -44,7 +45,7 @@ dependencies:
   - libffi=3.4.2=h9c3ff4c_4
   - libgcc-ng=11.2.0=h1d223b6_11
   - libgfortran-ng=7.5.0=ha8ba4b0_17
-  - libgfortran4=7.5.0
+  - libgfortran4=7.5.0=ha8ba4b0_17
   - libglib=2.70.0=h174f98d_0
   - libgomp=11.2.0=h1d223b6_11
   - libiconv=1.16=h516909a_0
@@ -67,7 +68,7 @@ dependencies:
   - numpy=1.19.2=py36h54aff64_0
   - numpy-base=1.19.2=py36hfa32c7d_0
   - olefile=0.46=pyh9f0ad1d_1
-  - openssl=1.1.1l=h7f8727e_0
+  - openssl=1.1.1l=h7f98852_0
   - pandas=1.1.5=py36h284efc9_0
   - pcre=8.45=h9c3ff4c_0
   - pillow=6.2.1=py36h6b7be26_0
