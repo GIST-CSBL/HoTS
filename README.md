@@ -76,6 +76,7 @@ conda env create --name envname --file=environments.yml
     scikit-learn 
     tqdm
     rdkit
+    biopython
     ============================
 
     contact : dlsrnsladlek@gist.ac.kr
@@ -139,7 +140,7 @@ Input config file should be `json` format and each value should be specified as 
     "output"			: Output file path, this script will result in 
 					{output}.config.json	: Model hyperparameter file
 					{output}.HoTS.h5	: BR prediction model weight file
-					{output}.DTI.h5	: DTI prediction model weight file
+					{output}.DTI.h5		: DTI prediction model weight file
 ```
 
 ## Example command
