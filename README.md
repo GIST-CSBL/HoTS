@@ -90,58 +90,58 @@ The input config file should be `json` format, and each value should be specifie
 
 ### Input file paramters
 ```
-    "dti_dir"        : Training DTI file path
-    "drug_dir"       : Training Compound file path
-    "protein_dir"     : Training Protein file path
-    "hots_dir"       : Training BR file path
-    "validation_dti_dir"   : Validation file path
-    "validation_drug_dir"  : Validaton file path
-    "validation_protein_dir"   : Validation file path
-    "validation_hots_dir"  : Validation BR file path
+    "dti_dir"                   : Training DTI file path
+    "drug_dir"                  : Training Compound file path
+    "protein_dir"               : Training Protein file path
+    "hots_dir"                  : Training BR file path
+    "validation_dti_dir"        : Validation file path
+    "validation_drug_dir"       : Validaton file path
+    "validation_protein_dir"    : Validation file path
+    "validation_hots_dir"       : Validation BR file path
 ```
 ### Compound feature paramters
 ```    
-    "drug_len"            : the number of bits for Morgan fingerprint
-    "radius"         : the size of radius for Morgan fingerprint
+    "drug_len"                  : the number of bits for Morgan fingerprint
+    "radius"                    : the size of radius for Morgan fingerprint
 ```
 ### Model shape parameters
 ```
-    "window_sizes"    : Protein convolution window sizes (should be list of integers)
-    "n_filters"          : Convolution filter size
-    "drug_layers"     : Dense layers on compound fingerprint (should be list of integers)
-    "hots_dimension"      : Size of dimension for Transformer
-    "n_heads"        : the number of heads in Transformer
-    "n_transformers_hots"  : the number of Transformer blocks for BR prediction
-    "n_transformers_dti"   : the number of Transformer blocks for DTI prediction
-    "hots_fc_layers"      : Dense layers for BR prediction (should be list of integers)
-    "dti_fc_layers"       : Dense layers for DTI prediction (should be list of integers)
-    "anchors"        : Predifined widths (anchor without coord offset, should be list of integers)
-    "grid_size"          : Protein grid size
+    "window_sizes"              : Protein convolution window sizes (should be list of integers)
+    "n_filters"                 : Convolution filter size
+    "drug_layers"               : Dense layers on compound fingerprint (should be list of integers)
+    "hots_dimension"            : Size of dimension for Transformer
+    "n_heads"                   : the number of heads in Transformer
+    "n_transformers_hots"       : the number of Transformer blocks for BR prediction
+    "n_transformers_dti"        : the number of Transformer blocks for DTI prediction
+    "hots_fc_layers"            : Dense layers for BR prediction (should be list of integers)
+    "dti_fc_layers"             : Dense layers for DTI prediction (should be list of integers)
+    "anchors"                   : Predifined widths (anchor without coord offset, should be list of integers)
+    "grid_size"                 : Protein grid size
 ```
 ### Training parameters
 ```
-    "learning_rate"       : Learning rate
-    "n_pretrain"      : the number of BR pre-training epochs
-    "n_epochs"            : the number of DTI training epochs
-    "hots_ratio"      : the number of BR training epochs per one DTI training
-    "activation"      : activation function of model
-    "dropout"        : Dropout rate
-    "batch_size"      : Training mini-batch size
-    "decay"          : Learning rate decay
+    "learning_rate"             : Learning rate
+    "n_pretrain"                : the number of BR pre-training epochs
+    "n_epochs"                  : the number of DTI training epochs
+    "hots_ratio"                : the number of BR training epochs per one DTI training
+    "activation"                : activation function of model
+    "dropout"                   : Dropout rate
+    "batch_size"                : Training mini-batch size
+    "decay"                     : Learning rate decay
 ```
 ## Loss parameters
 ```
-    "retina_loss"     : Retina loss weight
-    "confidence_loss"     : Confidence loss weight for BR prediction
-    "regression_loss"     : Regression loss weight for BR prediction
-    "negative_loss"       : Negative loss eight for BR prediction
+    "retina_loss"               : Retina loss weight
+    "confidence_loss"           : Confidence loss weight for BR prediction
+    "regression_loss"           : Regression loss weight for BR prediction
+    "negative_loss"             : Negative loss eight for BR prediction
 ``` 
 ### Output paramters
 ```
-    "output"         : Output file path, this script will result in 
-               {output}.config.json   : Model hyperparameter file
-               {output}.HoTS.h5   : BR prediction model weight file
-               {output}.DTI.h5       : DTI prediction model weight file
+    "output"                    : Output file path, this script will result in 
+               {output}.config.json     : Model hyperparameter file
+               {output}.HoTS.h5         : BR prediction model weight file
+               {output}.DTI.h5          : DTI prediction model weight file
 ```
 
 ## Example command and use of model
