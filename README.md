@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[Sequence-based prediction of protein binding regions and drug-target interaction](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00584-w)
+Lee, I., Nam, H. [Sequence-based prediction of protein binding regions and drug–target interactions](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00584-w). J Cheminform 14, 5 (2022). https://doi.org/10.1186/s13321-022-00584-w
 
 Recently, many feature-based drug-target interaction (DTI) prediction models have been developed.
 Especially for protein features, many models take a raw amino acid sequence as the input, building an end-to-end model.
