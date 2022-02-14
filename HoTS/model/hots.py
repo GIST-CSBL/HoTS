@@ -144,14 +144,35 @@ class HoTS(object):
     def summary(self, hots_plot=None, dti_plot=None):
         print("DTI summary")
         self.model_t.summary()
-        #if dti_plot:
-        #    from keras.utils import plot_model
-        #    plot_model(self.model_t, to_file=dti_plot, show_layer_names=True)
         print("HoTS summary")
         self.model_hots.summary()
-        #if hots_plot:
-        #    from keras.utils import plot_model
-        #    plot_model(self.model_hots, to_file=hots_plot, show_layer_names=True)
+
+    def HoTS_train(self, protein_feature, index_feature, drug_feature, batch_size=32, **kwargs):
+        train_n_steps = int((np.ceil(len(protein_feature))/batch_size))
+        train_gen = DataGeneratorHoTS(protein_feature, ind_label=index_feature, ligand=drug_feature,
+                              anchors=self.anchors, batch_size=batch_size,
+                              train=True, shuffle=True, protein_encoder=self.protein_encoder,
+                              compound_encoder=self.compound_encoder, grid_size=self.protein_grid_size)
+
+        prog_bar = Progbar(train_n_steps)
+        total_reg_loss = 0
+        for i in range(train_n_steps):
+            train_seq_batch, train_HoTs, train_mask, train_indice, train_ligand_batch, train_dtis, train_names = train_gen.next()
+            loss = self.model_hots.train_on_batch([train_ligand_batch, train_seq_batch, train_mask], train_HoTs)
+            #loss_sum, reg_loss, dti_loss = loss
+            reg_loss = loss
+            total_reg_loss += reg_loss
+            prog_bar.update(i+1, values=[("train_reg_loss", total_reg_loss/(i+1))])
+
+    def DTI_train(self, drug_feature, protein_feature, label, batch_size=32, start_epoch=0):
+        train_n_steps = int(np.ceil(len(label) / batch_size))
+
+        history = self.model_t.fit_generator(
+            DataGeneratorDTI(drug_feature, protein_feature, train_label=label, batch_size=batch_size,
+                             protein_encoder=self.protein_encoder, compound_encoder=self.compound_encoder,
+                             grid_size=self.protein_grid_size),
+            epochs= start_epoch + 1, verbose=1, initial_epoch=start_epoch, steps_per_epoch=train_n_steps)
+
 
     def DTI_prediction(self, drug_feature, protein_feature, label=None, output_file=None, batch_size=32, **kwargs):
         n_steps = int(np.ceil(len(protein_feature)/batch_size))
@@ -170,6 +191,26 @@ class HoTS(object):
         else:
             return prediction
 
+    def HoTS_prediction(self, drug_feature, protein_feature, th=0., batch_size=32, **kwargs):
+        test_n_steps = int(np.ceil(len(protein_feature)/batch_size))
+        test_gen = DataGeneratorHoTS(protein_feature, ind_label=None, ligand=drug_feature, name=None, anchors=self.anchors,
+                                     batch_size=batch_size, train=False, shuffle=False, compound_encoder=self.compound_encoder,
+                                     protein_encoder=self.protein_encoder, grid_size=self.protein_grid_size)
+        predicted_dtis = []
+        predicted_indice = []
+        for j in range(test_n_steps):
+            test_seq, test_mask, test_ligand = test_gen.next()
+            test_max_len = test_seq.shape[1]
+            prediction_dti = self.model_t.predict_on_batch([test_ligand, test_seq, test_mask])
+            prediction_hots = self.model_hots.predict([test_ligand, test_seq, test_mask])
+            hots_pooling = HoTSPooling(self.protein_grid_size, max_len=test_max_len, anchors=self.anchors,
+                                        protein_encoder=self.protein_encoder)
+            predicted_pooling_index = hots_pooling.hots_grid_to_subsequence(test_seq, prediction_hots, th=th)
+            predicted_dtis.append(prediction_dti)
+            predicted_indice += predicted_pooling_index
+        predicted_dtis = np.concatenate(predicted_dtis)
+        return predicted_dtis, predicted_indice
+
     def DTI_validation(self, drug_feature, protein_feature, label, gamma=2, batch_size=32, threshold=None, **kwargs):
         result_dic = {}
         n_steps = int(np.ceil(len(label)/batch_size))
@@ -177,14 +218,6 @@ class HoTS(object):
                 DataGeneratorDTI(drug_feature, protein_feature, protein_encoder=self.protein_encoder,
                                  compound_encoder=self.compound_encoder, batch_size=batch_size,
                                  grid_size=self.protein_grid_size, train=False), steps=n_steps)
-        '''
-        for hots_layer in self.model_t.layers:
-            if hots_layer.name=="DTI_representation_1":
-                print(hots_layer.name)
-                intermediated = Model(inputs=self.model_t.input, outputs=self.model_t.get_layer(hots_layer.name).output)
-                intermediated_output = intermediated.predict([drug_feature[-3:], sequence.pad_sequences(protein_feature[-3:])])
-                print(intermediated_output)
-        '''
         if threshold:
             prediction_copied = prediction.copy()
             prediction_copied[prediction_copied>=threshold] = 1
@@ -232,27 +265,10 @@ class HoTS(object):
                                                                 batch_size=batch_size)
         mean_ap = AP_calculator(index_feature, predicted_index, pdb_starts, pdb_ends,
                       min_value=self.anchors[0], max_value=int(self.anchors[-1]*np.e)).get_AP()
-        '''
-        max_len = int(np.ceil(len(protein_feature[0])/20)*20)
-        protein_feature_0 = sequence.pad_sequences([protein_feature[0]], maxlen=max_len, padding='post')
-        drug_feature_0 = np.stack([drug_feature[0]])
-        mask = np.ones(shape=(1, int(np.ceil(max_len / self.protein_grid_size)) + 1))
-        #mask[0, 0: int(np.ceil(len(protein) / self.protein_grid_size)) + 1] = 1
-        attention_layer_0 = Model(inputs=self.model_hots.inputs, outputs=self.model_hots.get_layer(name="DTI_Protein_feature_attention_Input").output)
-        #attention_layer_1 = Model(inputs=self.model_hots.inputs, outputs=self.model_hots.get_layer(name="Protein_attention_128_0_multihead_1_softmax").output)
-        #attention_layer_2 = Model(inputs=self.model_hots.inputs, outputs=self.model_hots.get_layer(name="Protein_attention_128_0_multihead_2_softmax").output)
-        #attention_layer_3 = Model(inputs=self.model_hots.inputs, outputs=self.model_hots.get_layer(name="Protein_attention_128_0_multihead_3_softmax").output)
-        print(attention_layer_0.predict([drug_feature_0,protein_feature_0, mask]))
-        #mean_ap=0.0
-        #print(attention_layer_1.predict([drug_feature_0,protein_feature_0]))
-        #print(attention_layer_2.predict([drug_feature_0,protein_feature_0]))
-        #print(attention_layer_3.predict([drug_feature_0,protein_feature_0]))
-        '''
         print("\tAP : ", mean_ap)
         print("=================================================")
 
         return {"AP":mean_ap}
-
 
     def get_HoTS_validation(self):
         return self.hots_validation_results
@@ -291,24 +307,6 @@ class HoTS(object):
         if output_file:
             output_file.close()
 
-    def HoTS_train(self, protein_feature, index_feature, drug_feature, batch_size=32, **kwargs):
-        train_n_steps = int((np.ceil(len(protein_feature))/batch_size))
-        train_gen = DataGeneratorHoTS(protein_feature, ind_label=index_feature, ligand=drug_feature,
-                              anchors=self.anchors, batch_size=batch_size,
-                              train=True, shuffle=True, protein_encoder=self.protein_encoder,
-                              compound_encoder=self.compound_encoder, grid_size=self.protein_grid_size)
-
-        prog_bar = Progbar(train_n_steps)
-        total_reg_loss = 0
-        for i in range(train_n_steps):
-            train_seq_batch, train_HoTs, train_mask, train_indice, train_ligand_batch, train_dtis, train_names = train_gen.next()
-            loss = self.model_hots.train_on_batch([train_ligand_batch, train_seq_batch, train_mask], train_HoTs)
-            #loss_sum, reg_loss, dti_loss = loss
-            reg_loss = loss
-            total_reg_loss += reg_loss
-            prog_bar.update(i+1, values=[("train_reg_loss", total_reg_loss/(i+1))])
-
-
     def validate_datasets(self, datasets, dataset_types=("HoTS", "DTI", "VIS"), batch_size=16):
         for dataset in datasets:
             dataset_type = dataset.split("_")[-1]
@@ -323,14 +321,11 @@ class HoTS(object):
             elif (dataset_type=="VIS") & (dataset_type in dataset_types):
                 self.HoTS_visualization(**dataset_dic)
 
-
     def training(self, dti_dataset, hots_dataset,n_epoch=10, batch_size=32, learning_rate=1e-3, decay=1e-3,
                  retina_loss_weight=2, reg_loss_weight=1., conf_loss_weight=10, negative_loss_weight=0.1,
                    hots_training_ratio=1, hots_warm_up_epoch=20, **kwargs):
         self.learning_rate = learning_rate
         self.decay = decay
-        #self.opt_hots = AdamWeightDecay(lr=self.learning_rate, decay=self.decay)
-        #self.opt_dti = AdamWeightDecay(lr=self.learning_rate, decay=self.decay)
 
         self.reg_loss_weight = reg_loss_weight
         self.conf_loss_weight = conf_loss_weight
@@ -338,10 +333,8 @@ class HoTS(object):
         self.retina_loss_weight = retina_loss_weight
 
         train_hots_n_steps = int(np.ceil(len(hots_dataset["index_feature"]) / batch_size)) * hots_warm_up_epoch
-        train_hots_warmup_steps = train_hots_n_steps * 0.2
 
         train_dti_n_steps = int(np.ceil(len(dti_dataset["label"]) / batch_size)) * n_epoch
-        train_dti_warmup_steps = train_dti_n_steps * 0.2
 
         self.hots_loss = HoTSLoss(grid_size=self.protein_grid_size, anchors=self.anchors,
                                     reg_loss_weight=self.reg_loss_weight, conf_loss_weight=self.conf_loss_weight,
@@ -349,8 +342,6 @@ class HoTS(object):
 
         self.opt_hots = Adam(lr=learning_rate, decay=self.decay)
         self.opt_dti = Adam(lr=learning_rate, decay=self.decay)
-        #self.opt_hots = create_optimizer(self.learning_rate, train_hots_n_steps, train_hots_warmup_steps)
-        #self.opt_hots = create_optimizer(self.learning_rate, train_dti_n_steps, train_dti_warmup_steps)
 
         self.model_t.compile(optimizer=self.opt_dti, loss='binary_crossentropy', metrics=['accuracy'])
         self.model_hots.compile(optimizer=self.opt_hots, loss=self.hots_loss.compute_hots_loss)
@@ -394,11 +385,7 @@ class HoTS(object):
                     #print("%s layer is set to non-trainable"%hots_layer.name)
             self.model_t.compile(optimizer=self.opt_dti, loss='binary_crossentropy', metrics=['accuracy'])
 
-            history = self.model_t.fit_generator(
-                    DataGeneratorDTI(drug_feature, protein_feature, train_label=label, batch_size=batch_size,
-                                     protein_encoder=self.protein_encoder, compound_encoder=self.compound_encoder,
-                                     grid_size=self.protein_grid_size),
-                                     epochs=z+1, verbose=1, initial_epoch=z, steps_per_epoch=train_n_steps)
+            self.DTI_train(drug_feature, protein_feature, label, batch_size, z)
             # Validate DTI
             self.validate_datasets(kwargs, batch_size=batch_size)
             # Train HoTS with DTI for N times
@@ -424,24 +411,6 @@ class HoTS(object):
             self.model_hots.compile(optimizer=self.opt_hots, loss=self.hots_loss.compute_hots_loss)
 
 
-    def HoTS_prediction(self, drug_feature, protein_feature, th=0., batch_size=32, **kwargs):
-        test_n_steps = int(np.ceil(len(protein_feature)/batch_size))
-        test_gen = DataGeneratorHoTS(protein_feature, ind_label=None, ligand=drug_feature, name=None, anchors=self.anchors,
-                                     batch_size=batch_size, train=False, shuffle=False, compound_encoder=self.compound_encoder,
-                                     protein_encoder=self.protein_encoder, grid_size=self.protein_grid_size)
-        predicted_dtis = []
-        predicted_indice = []
-        for j in range(test_n_steps):
-            test_seq, test_mask, test_ligand = test_gen.next()
-            test_max_len = test_seq.shape[1]
-            prediction_dti = self.model_t.predict_on_batch([test_ligand, test_seq, test_mask])
-            prediction_hots = self.model_hots.predict([test_ligand, test_seq, test_mask])
-            hots_pooling = HoTSPooling(self.protein_grid_size, max_len=test_max_len, anchors=self.anchors,
-                                        protein_encoder=self.protein_encoder)
-            predicted_pooling_index = hots_pooling.hots_grid_to_subsequence(test_seq, prediction_hots, th=th)
-            predicted_dtis.append(prediction_dti)
-            predicted_indice += predicted_pooling_index
-        predicted_dtis = np.concatenate(predicted_dtis)
-        return predicted_dtis, predicted_indice
+
 
 
