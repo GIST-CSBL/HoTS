@@ -1,43 +1,44 @@
-# HoTS: Sequence based prediction of binding regions and drug-target interactions
+# HoTS: Sequence-based prediction of binding regions and drug-target interactions
 
 ## Introduction
 
-Recently, many feature based drug-target interaction (DTI) prediction models are developed.
-Especially, for protein feature, many models take raw amino acid sequence as the input, building end-to-end model.
+Lee, I., Nam, H. [Sequence-based prediction of protein binding regions and drug–target interactions](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00584-w). J Cheminform 14, 5 (2022). https://doi.org/10.1186/s13321-022-00584-w
+
+Recently, many feature-based drug-target interaction (DTI) prediction models have been developed.
+Especially for protein features, many models take a raw amino acid sequence as the input, building an end-to-end model.
 
 This model gives some advantages for prediction, such as
 
-  * Model catches local patterns of feature, whose information is lost in global feature. 
-  * Model becomes more informative and interpretable than model using global feature
+  * Model catches local patterns whose information is lost in global features. 
+  * Model becomes more informative and interpretable than the model using global feature
 
-DeepConv-DTI and DeepAffinity show that deep learning model with protein sequence actually capture local residue pattern participating in interaction with ligands.
-Therefore, we can hypothesize that increasing ability to capture important local residue patterns will also increase performance of prediction.
-But, how can increase ability to capture important local motifs for drug-target prediction model?
+DeepConv-DTI and DeepAffinity show that a deep learning model with protein sequence capture local residue pattern participating in the interaction with ligands.
+Therefore, we can hypothesize that increasing ability to capture important interacting motifs will also increase performances of DTI prediction.
+However, how can the ability to capture important local motifs for the drug-target prediction model?
 
-In DeepConv-DTI, variety size of convolutional neural networks (CNN) play role of capturing local residue patterns
+In DeepConv-DTI, the variety size of convolutional neural networks (CNN) captures local residue patterns.
 Then, we can explicitly train CNN and further layers to concentrate on binding information.
 
-So, we built model on protein sequence to predict ``binding region (BR)``, which is called **Highlights on Protein Sequence (HoTS)**.
-We predict BR of protein in the way of object detection in image processing field.
+So, we built a model on protein sequence to predict ``binding region (BR)``, called **Highlights on Protein Sequence (HoTS)**.
+We predict BRs of protein in the way of object detection in the image processing field.
 
-We refers **BR** as consecutive subsequence including ``binding pockets/sites (binding information, BI)`` interacting with ligand in protein-ligand complex.
-Procedure of generating BR from BI is summarized in [ipython notbook](SampleData/HoTS/Parsing_scPDB_for_HoTS.ipynb) 
+We refer **BR** as a consecutive subsequence including ``binding pockets/sites (binding information, BI)`` interacting with ligand in the protein-ligand complex.
 
-By predicting `BR, performance of DTI prediction increase than previous model [DeepConv-DTI](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007129).
+By predicting BR, the performances of DTI prediction increase from previous model [DeepConv-DTI](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007129).
 
-Moreover, as pointed in [studies](https://www.researchgate.net/publication/335085389_Improved_fragment_sampling_for_ab_initio_protein_structure_prediction_using_deep_neural_networks), inter-dependency between protein moitifs must be considered for better respresentation
+Moreover, as pointed out in [studies](https://www.researchgate.net/publication/335085389_Improved_fragment_sampling_for_ab_initio_protein_structure_prediction_using_deep_neural_networks), inter-dependency between protein motifs must be considered for better representation
 
 Our model utilized [Transformers](https://arxiv.org/abs/1706.03762) to model interdependency between sequential grids.
-Moreover, we added compound token before protein grids as ``<CLS>`` token is added to predict class of sentence. Transformer also will model interaction between protein and compound.
+Moreover, we added a compound token before protein grids as ``<CLS>`` token is added to predict sentence class. The transformer also will model the interaction between protein and compound.
 
 Our model is depicted as [overview figure](Figures/Fig_1.jpg)
 
 ## License
 
 
-HoTS follow [GPL 3.0v license](LICENSE). Therefore, HoTS is open source and free to use for everyone.
+HoTS follows [GPL 3.0v license](LICENSE). Therefore, HoTS is open source and free to use for everyone.
 
-However, compounds which are found by using HoTS follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purpose or individual research, but restricted for commecial use.
+However, compounds which are found by using HoTS follows [CC-BY-NC-4.0](CC-BY-NC-SA-4.0). Thus, those compounds are freely available for academic purposes or individual research but restricted for commercial use.
 
 ## Contact
 
@@ -50,38 +51,22 @@ dlsrnsladlek@gist.ac.kr
 
 ![OverviewFigure](Figures/Fig_1.jpg)
 
+## Environment set-up
+
+conda environment file [environment.yml](environment.yml) is provided
+
+``` 
+conda env create --name envname --file=environments.yml
+```
+
 ## Usage
 
 ```
-usage: run_HoTS.py [-h] [--validation-dti-dir VALIDATION_DTI_DIR]
-                   [--validation-drug-dir VALIDATION_DRUG_DIR]
-                   [--validation-protein-dir VALIDATION_PROTEIN_DIR]
-                   [--validation-hots-dir VALIDATION_HOTS_DIR]
-                   [--window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]]]
-                   [--n-filters N_FILTERS]
-                   [--drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]]]
-                   [--hots-dimension HOTS_DIMENSION] [--n-heads N_HEADS]
-                   [--n-transformers-hots N_TRANSFORMERS_HOTS]
-                   [--n-transformers-dti N_TRANSFORMERS_DTI]
-                   [--hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]]
-                   [--dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]]
-                   [--anchors ANCHORS [ANCHORS ...]] [--grid-size GRID_SIZE]
-                   [--learning-rate LEARNING_RATE] [--n-warm-up N_WARM_UP]
-                   [--n-epochs N_EPOCHS] [--hots-ratio HOTS_RATIO]
-                   [--retina-loss RETINA_LOSS]
-                   [--confidence-loss CONFIDENCE_LOSS]
-                   [--regression-loss REGRESSION_LOSS]
-                   [--negative-loss NEGATIVE_LOSS] [--drug-len DRUG_LEN]
-                   [--radius RADIUS] [--activation ACTIVATION]
-                   [--dropout DROPOUT] [--batch-size BATCH_SIZE]
-                   [--decay DECAY] [--save-model SAVE_MODEL]
-                   dti_dir drug_dir protein_dir hots_dir
-
-    This Python script is used to train, validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
-    Deep learning model will be built by Keras with tensorflow.
-    You can set almost hyper-parameters as you want, See below parameter description
-    DTI, drug and protein data must be written as csv file format. And feature should be tab-delimited format for script to parse data.
-    And for HoTS, Protein Sequence, binding region and SMILES are need in tsv. you can check the format in sample data. 
+    This Python script is used to train, and validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
+    Keras will build deep learning model with tensorflow.
+    You can set almost hyper-parameters as you want; see below parameter description.
+    DTI, drug, and protein data must be written in a csv file format. And feature should be in tab-delimited format for the script to parse data.
+    And for BR, Protein Sequence, binding region, and SMILES are needed in tsv. You can check the format in sample data. 
 
     Requirement
     ============================ 
@@ -90,103 +75,97 @@ usage: run_HoTS.py [-h] [--validation-dti-dir VALIDATION_DTI_DIR]
     numpy 
     pandas 
     scikit-learn 
-    tqdm 
+    tqdm
+    rdkit
+    biopython
     ============================
 
     contact : dlsrnsladlek@gist.ac.kr
               hjnam@gist.ac.kr
-
-    
-
-positional arguments:
-  dti_dir               Training DTI information [Compound_ID, Protein_ID,
-                        Label]
-  drug_dir              Training drug information [Compound_ID, SMILES]
-  protein_dir           Training protein information [Protein_ID, Sequence]
-  hots_dir              Training BR information [Sequence, binding_region]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --validation-dti-dir VALIDATION_DTI_DIR
-                        Test dti [Compound_ID, Protein_ID, Label]
-  --validation-drug-dir VALIDATION_DRUG_DIR
-                        Test drug information [Compound_ID, SMILES]
-  --validation-protein-dir VALIDATION_PROTEIN_DIR
-                        Test Protein information [Protein_ID, Sequence]
-  --validation-hots-dir VALIDATION_HOTS_DIR
-                        Validation Binding region information [Sequence,
-                        binding_region]
-  --window-sizes [WINDOW_SIZES [WINDOW_SIZES ...]], -w [WINDOW_SIZES [WINDOW_SIZES ...]]
-                        Window sizes for model
-  --n-filters N_FILTERS, -f N_FILTERS
-                        Number of filters for convolution layer
-  --drug-layers [DRUG_LAYERS [DRUG_LAYERS ...]], -c [DRUG_LAYERS [DRUG_LAYERS ...]]
-                        Dense layers for drugs
-  --hots-dimension HOTS_DIMENSION, -H HOTS_DIMENSION
-                        Dimension of HoTS, D_model for transformer
-  --n-heads N_HEADS     Number of heads for multi-head attention
-  --n-transformers-hots N_TRANSFORMERS_HOTS
-                        Number of transformers for BR prediction, must be less
-                        than n-transformers-dti
-  --n-transformers-dti N_TRANSFORMERS_DTI
-                        Number of transformers for DTI prediction
-  --hots-fc-layers [HOTS_FC_LAYERS [HOTS_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and
-                        target layer
-  --dti-fc-layers [DTI_FC_LAYERS [DTI_FC_LAYERS ...]]
-                        Dense layers for concatenated layers of drug and
-                        target layer
-  --anchors ANCHORS [ANCHORS ...]
-                        Basic anchors to predict BR
-  --grid-size GRID_SIZE
-                        Grid size to pool protein feature from convolution
-                        results
-  --learning-rate LEARNING_RATE, -r LEARNING_RATE
-                        Learning late for training
-  --n-warm-up N_WARM_UP
-                        The number of warming-up epochs
-  --n-epochs N_EPOCHS, -e N_EPOCHS
-                        The number of epochs for training or validation
-  --hots-ratio HOTS_RATIO
-                        The number of HoTS training ratio per DTI training
-                        epoch
-  --retina-loss RETINA_LOSS
-                        Retina loss weight
-  --confidence-loss CONFIDENCE_LOSS
-                        Confidence loss weight for BR prediction
-  --regression-loss REGRESSION_LOSS
-                        Regression loss weight for BR prediction
-  --negative-loss NEGATIVE_LOSS
-                        Negative loss weight for BR prediction
-  --drug-len DRUG_LEN, -L DRUG_LEN
-                        Drug vector length
-  --radius RADIUS, -R RADIUS
-                        Morgan fingerprints raidus
-  --activation ACTIVATION, -a ACTIVATION
-                        Activation function of model
-  --dropout DROPOUT, -D DROPOUT
-                        Dropout ratio
-  --batch-size BATCH_SIZE, -b BATCH_SIZE
-                        Batch size
-  --decay DECAY, -y DECAY
-                        Learning rate decay
-  --save-model SAVE_MODEL, -m SAVE_MODEL
-                        Path to save model
 ```
 
+## Input config specification
 
-### Example command
+The input config file should be `json` format, and each value should be specified as follows:
 
-defaults values are set as optimized parameter so you can train HoTS model with following command
+### Input file paramters
+```
+    "dti_dir"                   : Training DTI file path
+    "drug_dir"                  : Training Compound file path
+    "protein_dir"               : Training Protein file path
+    "hots_dir"                  : Training BR file path
+    "validation_dti_dir"        : Validation file path
+    "validation_drug_dir"       : Validaton file path
+    "validation_protein_dir"    : Validation file path
+    "validation_hots_dir"       : Validation BR file path
+```
+### Compound feature paramters
+```    
+    "drug_len"                  : the number of bits for Morgan fingerprint
+    "radius"                    : the size of radius for Morgan fingerprint
+```
+### Model shape parameters
+```
+    "window_sizes"              : Protein convolution window sizes (should be list of integers)
+    "n_filters"                 : Convolution filter size
+    "drug_layers"               : Dense layers on compound fingerprint (should be list of integers)
+    "hots_dimension"            : Size of dimension for Transformer
+    "n_heads"                   : the number of heads in Transformer
+    "n_transformers_hots"       : the number of Transformer blocks for BR prediction
+    "n_transformers_dti"        : the number of Transformer blocks for DTI prediction
+    "hots_fc_layers"            : Dense layers for BR prediction (should be list of integers)
+    "dti_fc_layers"             : Dense layers for DTI prediction (should be list of integers)
+    "anchors"                   : Predifined widths (anchor without coord offset, should be list of integers)
+    "grid_size"                 : Protein grid size
+```
+### Training parameters
+```
+    "learning_rate"             : Learning rate
+    "n_pretrain"                : the number of BR pre-training epochs
+    "n_epochs"                  : the number of DTI training epochs
+    "hots_ratio"                : the number of BR training epochs per one DTI training
+    "activation"                : activation function of model
+    "dropout"                   : Dropout rate
+    "batch_size"                : Training mini-batch size
+    "decay"                     : Learning rate decay
+```
+## Loss parameters
+```
+    "retina_loss"               : Retina loss weight
+    "confidence_loss"           : Confidence loss weight for BR prediction
+    "regression_loss"           : Regression loss weight for BR prediction
+    "negative_loss"             : Negative loss eight for BR prediction
+``` 
+### Output paramters
+```
+    "output"                    : Output file path, this script will result in 
+               {output}.config.json     : Model hyperparameter file
+               {output}.HoTS.h5         : BR prediction model weight file
+               {output}.DTI.h5          : DTI prediction model weight file
+```
+
+## Example command and use of model
+
+defaults values are set as optimized parameters so you can train the HoTS model with the following command
  
 ```
-python run_HoTS.py ./SampleData/DTI/Training/Training_DTI_Sample.csv \
-                 ./SampleData/DTI/Training/Training_Compound_Sample.csv \ 
-                 ./SampleData/DTI/Training/Training_Protein_Sample.csv \
-                 ./SampleData/HoTS/Training_HoTS.tsv \ 
-                 --validation-dti-dir  ./SampleData/DTI/Validation/Validation_DTI.csv \
-                 --validation-drug-dir ./SampleData/DTI/Validation/Validation_Compound.csv \
-                 --validation-protein-dir ./SampleData/DTI/Validation/Validation_Protein.csv \
-                 --validation-hots-dir ./SampleData/HoTS/Validation_HoTS.tsv \ 
-                 -m ./Saved_model
+python train_HoTS.py input_config.json
 ```
+
+Note that training data is sample data in this repository, so it won't give a proper model.
+
+If you want to train a model with your data, you can fix the training data path in [training configuration](input_config.json)
+
+You can generate BR data by following [notebook](SampleData/HoTS/Parsing_scPDB_for_HoTS.ipynb) 
+
+### Prediction with the trained model 
+
+However, we uploaded [the trained model](Model/HoTS_config.json) in our repository.
+
+You can predict DTIs with the trained model.
+
+With the trained model, you can predict BRs and DTIs.
+
+Please read this notebook, which summarizes and explains the functions in the HoTS.
+
+[Prediction with the trained model](Prediction_with_trained_model.ipynb)
