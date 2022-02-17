@@ -129,7 +129,7 @@ The input config file should be `json` format, and each value should be specifie
     "batch_size"                : Training mini-batch size
     "decay"                     : Learning rate decay
 ```
-## Loss parameters
+### Loss parameters
 ```
     "retina_loss"               : Retina loss weight
     "confidence_loss"           : Confidence loss weight for BR prediction
@@ -160,9 +160,7 @@ You can generate BR data by following [notebook](SampleData/HoTS/Parsing_scPDB_f
 
 ### Prediction with the trained model 
 
-However, we uploaded [the trained model](Model/HoTS_config.json) in our repository.
-
-You can predict DTIs with the trained model.
+We uploaded [the trained model](Model/HoTS_config.json) in our repository.
 
 With the trained model, you can predict BRs and DTIs.
 
