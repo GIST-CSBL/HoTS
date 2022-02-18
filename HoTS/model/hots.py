@@ -108,9 +108,11 @@ class HoTS(object):
         if hots_file is not None:
             model_hots.save(hots_file, overwrite=True)
             print("\tHoTS Model saved at %s"%hots_file)
+            self.model_hots = model_hots
         if dti_file is not None:
             model_t.save(dti_file, overwrite=True)
             print("\tDTI Model saved at %s"%dti_file)
+            self.model_t = model_t
 
     def load_model(self, model_config=None, hots_file=None, dti_file=None):
         if model_config is not None:
