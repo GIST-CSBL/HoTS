@@ -97,14 +97,19 @@ class HoTS(object):
         model_hots = class_dict.pop("model_hots")
         if model_config is not None:
             import json
-            class_dict.pop("protein_encoder")
-            class_dict.pop("compound_encoder")
-            class_dict.pop("hots_loss")
-            class_dict.pop('opt_dti')
-            class_dict.pop('opt_hots')
+            protein_encoder = class_dict.pop("protein_encoder")
+            compound_encoder = class_dict.pop("compound_encoder")
+            hots_loss = class_dict.pop("hots_loss")
+            opt_dti = class_dict.pop('opt_dti')
+            opt_hots = class_dict.pop('opt_hots')
             f = open(model_config, 'w')
             json.dump(class_dict, f)
             f.close()
+            self.protein_encoder = protein_encoder
+            self.compound_encoder = compound_encoder
+            self.hots_loss = hots_loss
+            self.opt_dti = opt_dti
+            self.opt_hots = opt_hots
         if hots_file is not None:
             model_hots.save(hots_file, overwrite=True)
             print("\tHoTS Model saved at %s"%hots_file)
