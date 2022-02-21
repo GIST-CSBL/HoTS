@@ -289,8 +289,7 @@ class HoTS(object):
         predicted_score, predicted_index = self.HoTS_prediction(drug_feature, protein_feature, th=th,
                                                                 batch_size=batch_size)
         if top_n:
-            predicted_score = predicted_score[:top_n]
-            predicted_index = predicted_index[:top_n]
+            predicted_index = predicted_index[:,:top_n]
         print("Prediction with %f"%th)
         if not pdb_starts:
             pdb_starts = [0]*len(drug_feature)
