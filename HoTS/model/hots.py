@@ -97,20 +97,27 @@ class HoTS(object):
         model_hots = class_dict.pop("model_hots")
         if model_config is not None:
             import json
-            class_dict.pop("protein_encoder")
-            class_dict.pop("compound_encoder")
-            class_dict.pop("hots_loss")
-            class_dict.pop('opt_dti')
-            class_dict.pop('opt_hots')
+            protein_encoder = class_dict.pop("protein_encoder")
+            compound_encoder = class_dict.pop("compound_encoder")
+            hots_loss = class_dict.pop("hots_loss")
+            opt_dti = class_dict.pop('opt_dti')
+            opt_hots = class_dict.pop('opt_hots')
             f = open(model_config, 'w')
             json.dump(class_dict, f)
             f.close()
+            self.protein_encoder = protein_encoder
+            self.compound_encoder = compound_encoder
+            self.hots_loss = hots_loss
+            self.opt_dti = opt_dti
+            self.opt_hots = opt_hots
         if hots_file is not None:
             model_hots.save(hots_file, overwrite=True)
             print("\tHoTS Model saved at %s"%hots_file)
+            self.model_hots = model_hots
         if dti_file is not None:
             model_t.save(dti_file, overwrite=True)
             print("\tDTI Model saved at %s"%dti_file)
+            self.model_t = model_t
 
     def load_model(self, model_config=None, hots_file=None, dti_file=None):
         if model_config is not None:
@@ -277,9 +284,13 @@ class HoTS(object):
         return self.dti_validation_results
 
     def HoTS_visualization(self, drug_feature, protein_feature, sequence, pdb_starts=None, pdb_ends=None, print_score=True,
-                           index_feature=None, protein_names=None, line_length=100, th=0.75, batch_size=32, output_file=None, **kwargs):
+                           index_feature=None, protein_names=None, line_length=100, th=0.75, batch_size=32, output_file=None,
+                           top_n=None, **kwargs):
         predicted_score, predicted_index = self.HoTS_prediction(drug_feature, protein_feature, th=th,
                                                                 batch_size=batch_size)
+        if top_n:
+            predicted_score = predicted_score[:top_n]
+            predicted_index = predicted_index[:top_n]
         print("Prediction with %f"%th)
         if not pdb_starts:
             pdb_starts = [0]*len(drug_feature)
