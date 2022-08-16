@@ -1,16 +1,17 @@
 import numpy as np
-from keras.utils import Progbar
-from keras import models
+import tensorflow as tf
+from tensorflow.keras.utils import Progbar
+from tensorflow.keras import models
 from HoTS.model.model import HoTSModel
 from HoTS.model.loss import HoTSLoss
 from HoTS.utils import *
 
 from sklearn.metrics import precision_recall_curve, auc, roc_curve, confusion_matrix
 
-from keras.models import Model
-from keras.layers import *
-from keras.optimizers import Adam
-from keras.preprocessing import sequence
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import *
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.preprocessing import sequence
 
 
 

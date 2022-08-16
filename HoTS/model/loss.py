@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras.losses import MSE, categorical_crossentropy, binary_crossentropy
+from tensorflow.keras.losses import MSE, categorical_crossentropy, binary_crossentropy
 
 EPSILON = 1e-5
 
@@ -55,26 +55,12 @@ class HoTSLoss(object):
         pred_w = pred_boxes[..., 1]
         w_loss = tf.abs(gt_w - pred_w) * self.reg_loss_weight * is_true
 
-        grid_anchors = tf.cast(tf.reshape(self.anchors, [1, 1, len(self.anchors)]), tf.float32)
-        '''
-        gt_c = tf.ones_like(gt_boxes[..., 0])*self.grid_size + gt_boxes[..., 0]*self.grid_size
-        gt_w = tf.exp(gt_boxes[..., 1])*grid_anchors
-        pred_c = tf.ones_like(pred_boxes[..., 0])*self.grid_size + pred_boxes[..., 0]*self.grid_size
-        pred_w = tf.exp(pred_boxes[..., 1])*grid_anchors
-        gt_min = gt_c - gt_w/2
-        gt_max = gt_c + gt_w/2
-        pred_min = pred_c - pred_w/2
-        pred_max = pred_c + pred_w/2
-        iou_loss = (1 - self.compute_iou(gt_min, gt_max, pred_min, pred_max)) * self.reg_loss_weight * is_true
-        c_loss = tf.square(gt_c - pred_c) * self.reg_loss_weight * is_true
-        w_loss = tf.square(gt_w - pred_w) * self.reg_loss_weight * is_true
-        '''
 
         # Retina
         pt = tf.maximum(pred_label, EPSILON)
         pt = tf.minimum(pt, 1 - EPSILON)
-        retina_conf_obj = -((1-pt)**self.retina_weight)*tf.log(pt) * self.conf_loss_weight * is_true
-        retina_conf_noobj = -((pt)**self.retina_weight)*tf.log(1-pt) * self.conf_loss_weight * self.negative_loss_weight * is_false
+        retina_conf_obj = -((1-pt)**self.retina_weight)*tf.math.log(pt) * self.conf_loss_weight * is_true
+        retina_conf_noobj = -((pt)**self.retina_weight)*tf.math.log(1-pt) * self.conf_loss_weight * self.negative_loss_weight * is_false
 
         obj_loss = retina_conf_obj + retina_conf_noobj
 
