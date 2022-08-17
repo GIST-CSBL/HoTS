@@ -242,7 +242,7 @@ class HoTSModel(object):
             dot = Lambda(lambda a: a/tf.sqrt(tf.cast(K.shape(a)[-1], tf.float32)), name=name+"_scaled_dot")(dot)
             if attention_mask is not None:
                 dot = Multiply()([dot, attention_mask])
-                dot = Lambda(lambda a: tf.where(a!=0, a, -float('inf')*tf.ones_like(a)))(dot)
+                dot = Lambda(lambda a: tf.where(a!=0, a, -1e9*tf.ones_like(a)))(dot)
             attn = Activation('softmax', name=name+"_softmax")(dot)
             attn = Dropout(dropout)(attn)
             attn = Dot([2,1], name=name+"_attended")([attn, value])

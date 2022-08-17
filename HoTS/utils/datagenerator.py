@@ -61,7 +61,7 @@ class DataGeneratorDTI(object):
             if self.train:
                 labels = self.__label[start_ind: end_ind]
                 labels = np.array(labels)
-                return [drugs, protein_features], [labels]
+                return [drugs, protein_features], labels
             else:
                 return [drugs, protein_features]
         else:
@@ -69,7 +69,7 @@ class DataGeneratorDTI(object):
             if self.train:
                 labels = self.__label[start_ind: end_ind]
                 labels = np.array(labels)
-                return [drugs, protein_features, mask], [labels]
+                return [drugs, protein_features, mask], labels
 
             else:
                 return [drugs, protein_features, mask]
@@ -186,7 +186,7 @@ class DataGeneratorHoTS(object):
         if self.__name:
             entry_names = self.__name[start_ind:end_ind]
         if self.__ind_label:
-            queried_indice = np.array(self.__ind_label[start_ind:end_ind])
+            queried_indice = np.array(self.__ind_label[start_ind:end_ind], dtype=object)
             queried_dtis = np.array(self.__dti_label[start_ind:end_ind])
             hots_outputs = [create_HoTS_output(indice, i, self.anchors, max_len=max_len,
                                                train=self.train, grid_len=self.__grid_size)

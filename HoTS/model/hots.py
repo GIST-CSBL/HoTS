@@ -174,12 +174,20 @@ class HoTS(object):
 
     def DTI_train(self, drug_feature, protein_feature, label, batch_size=32, start_epoch=0):
         train_n_steps = int(np.ceil(len(label) / batch_size))
-
-        history = self.model_t.fit_generator(
-            DataGeneratorDTI(drug_feature, protein_feature, train_label=label, batch_size=batch_size,
-                             protein_encoder=self.protein_encoder, compound_encoder=self.compound_encoder,
-                             grid_size=self.protein_grid_size),
-            epochs= start_epoch + 1, verbose=1, initial_epoch=start_epoch, steps_per_epoch=train_n_steps)
+        train_gen = DataGeneratorDTI(drug_feature, protein_feature, train_label=label, batch_size=batch_size,
+                                     protein_encoder=self.protein_encoder, compound_encoder=self.compound_encoder,
+                                     grid_size=self.protein_grid_size)
+        total_bce_loss = 0
+        total_accuracy = 0
+        prog_bar = Progbar(train_n_steps)
+        for i in range(train_n_steps):
+            train_input, train_target = train_gen.next()
+            loss = self.model_t.train_on_batch(train_input, train_target)
+            #loss_sum, reg_loss, dti_loss = loss
+            bce_loss, accuracy = loss
+            total_bce_loss += bce_loss
+            total_accuracy += accuracy
+            prog_bar.update(i+1, values=[("BCE_loss: ", total_bce_loss/(i+1)), ("accuracy: ", total_accuracy/(i+1))])
 
 
     def DTI_prediction(self, drug_feature, protein_feature, label=None, output_file=None, batch_size=32, **kwargs):
@@ -342,10 +350,6 @@ class HoTS(object):
         self.conf_loss_weight = conf_loss_weight
         self.negative_loss_weight = negative_loss_weight
         self.retina_loss_weight = retina_loss_weight
-
-        train_hots_n_steps = int(np.ceil(len(hots_dataset["index_feature"]) / batch_size)) * hots_warm_up_epoch
-
-        train_dti_n_steps = int(np.ceil(len(dti_dataset["label"]) / batch_size)) * n_epoch
 
         self.hots_loss = HoTSLoss(grid_size=self.protein_grid_size, anchors=self.anchors,
                                     reg_loss_weight=self.reg_loss_weight, conf_loss_weight=self.conf_loss_weight,
