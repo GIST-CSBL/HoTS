@@ -56,7 +56,7 @@ dlsrnsladlek@gist.ac.kr
 conda environment file [environment.yml](environment.yml) is provided
 
 ``` 
-conda env create --name envname --file=environments.yml
+conda env create python==3.8 --name envname --file=environments.yml
 ```
 
 ## Usage
