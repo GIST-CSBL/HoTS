@@ -68,17 +68,6 @@ conda env create --name envname --file=environments.yml
     DTI, drug, and protein data must be written in a csv file format. And feature should be in tab-delimited format for the script to parse data.
     And for BR, Protein Sequence, binding region, and SMILES are needed in tsv. You can check the format in sample data. 
 
-    Requirement
-    ============================ 
-    tensorflow == 1.12.0 
-    keras == 2.2.4 
-    numpy 
-    pandas 
-    scikit-learn 
-    tqdm
-    rdkit
-    biopython
-    ============================
 
     contact : dlsrnsladlek@gist.ac.kr
               hjnam@gist.ac.kr

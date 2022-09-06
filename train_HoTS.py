@@ -8,22 +8,10 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="""
     This Python script is used to train, and validate sequence-based deep learning model for prediction of drug-target interaction (DTI) and binding region (BR)
-    Keras will build deep learning model with tensorflow.
+    Keras will build deep learning model with tensorflow2.
     You can set almost hyper-parameters as you want; see below parameter description.
     DTI, drug, and protein data must be written in a csv file format. And feature should be in tab-delimited format for the script to parse data.
     And for BR, Protein Sequence, binding region, and SMILES are needed in tsv. You can check the format in sample data. 
-
-    Requirement
-    ============================ 
-    tensorflow == 1.12.0 
-    keras == 2.2.4 
-    numpy 
-    pandas 
-    scikit-learn 
-    tqdm
-    rdkit
-    biopython
-    ============================
 
     contact : dlsrnsladlek@gist.ac.kr
               hjnam@gist.ac.kr
