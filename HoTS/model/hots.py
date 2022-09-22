@@ -96,6 +96,7 @@ class HoTS(object):
         class_dict = self.__dict__
         model_t = class_dict.pop("model_t")
         model_hots = class_dict.pop("model_hots")
+        print("Saving model to... %s"%model_config)
         if model_config is not None:
             import json
             protein_encoder = class_dict.pop("protein_encoder")
@@ -191,21 +192,25 @@ class HoTS(object):
 
 
     def DTI_prediction(self, drug_feature, protein_feature, label=None, output_file=None, batch_size=32, **kwargs):
-        n_steps = int(np.ceil(len(protein_feature)/batch_size))
-        prediction = self.model_t.predict_generator(
-                DataGeneratorDTI(drug_feature, protein_feature, protein_encoder=self.protein_encoder,
+        test_n_steps = int(np.ceil(len(protein_feature)/batch_size))
+        test_gen = DataGeneratorDTI(drug_feature, protein_feature, protein_encoder=self.protein_encoder,
                                  compound_encoder=self.compound_encoder, batch_size=batch_size,
-                                 grid_size=self.protein_grid_size, train=False), steps=n_steps)
-
+                                 grid_size=self.protein_grid_size, train=False)
+        predicted_dtis = []
+        for j in range(test_n_steps):
+            test_drug, test_seq, test_mask  = test_gen.next()
+            prediction_dti = self.model_t.predict_on_batch([test_drug, test_seq, test_mask])
+            predicted_dtis.append(prediction_dti)
+        predicted_dtis = np.concatenate(predicted_dtis)
         if output_file:
             import pandas as pd
             result_df = pd.DataFrame()
             if label:
                 result_df["label"] = label
-            result_df["predicted"] = prediction
+            result_df["predicted"] = predicted_dtis
             result_df.save(output_file, index=False)
         else:
-            return prediction
+            return predicted_dtis
 
     def HoTS_prediction(self, drug_feature, protein_feature, th=0., batch_size=32, **kwargs):
         test_n_steps = int(np.ceil(len(protein_feature)/batch_size))
@@ -230,10 +235,8 @@ class HoTS(object):
     def DTI_validation(self, drug_feature, protein_feature, label, gamma=2, batch_size=32, threshold=None, **kwargs):
         result_dic = {}
         n_steps = int(np.ceil(len(label)/batch_size))
-        prediction = self.model_t.predict_generator(
-                DataGeneratorDTI(drug_feature, protein_feature, protein_encoder=self.protein_encoder,
-                                 compound_encoder=self.compound_encoder, batch_size=batch_size,
-                                 grid_size=self.protein_grid_size, train=False), steps=n_steps)
+        prediction = self.DTI_prediction(drug_feature, protein_feature, label=None, batch_size=batch_size)
+
         if threshold:
             prediction_copied = prediction.copy()
             prediction_copied[prediction_copied>=threshold] = 1
