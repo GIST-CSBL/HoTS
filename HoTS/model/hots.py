@@ -247,7 +247,7 @@ class HoTS(object):
             test_seq, test_mask, test_ligand = test_gen.next()
             test_max_len = test_seq.shape[1]
             prediction_dti = self.model_t.predict_on_batch([test_ligand, test_seq, test_mask])
-            prediction_hots = self.model_hots.predict([test_ligand, test_seq, test_mask])
+            prediction_hots = self.model_hots.predict_on_batch([test_ligand, test_seq, test_mask])
             hots_pooling = HoTSPooling(self.protein_grid_size, max_len=test_max_len, anchors=self.anchors,
                                         protein_encoder=self.protein_encoder)
             predicted_pooling_index = hots_pooling.hots_grid_to_subsequence(test_seq, prediction_hots, th=th)
