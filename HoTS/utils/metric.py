@@ -66,13 +66,15 @@ class AP_calculator(object):
         pred_calls = []
         #precisions = []
         #recalls = []
-        pool = Pool(50)
+        #pool = Pool(10)
         pred_ind_for_gt = [(pred_start, pred_end, self.true_inds[sample_ind], self.true_inds_called[sample_ind])
                            for sample_ind, pred_start, pred_end, score in self.pred_inds]
-        call_results = pool.starmap(self.call_prediction_gt, pred_ind_for_gt)
-        pool.close()
-        pool.terminate()
-        pool.join()
+        call_results = [self.call_prediction_gt(pred_start, pred_end, true_indices, true_called) for
+                        pred_start, pred_end, true_indices, true_called in pred_ind_for_gt]
+        #call_results = pool.starmap(self.call_prediction_gt, pred_ind_for_gt)
+        #pool.close()
+        #pool.terminate()
+        #pool.join()
         precisions = np.cumsum([pred_called for pred_called, true_inds_called, is_true_called in call_results])
         recalls = np.cumsum([is_true_called for pred_called, true_inds_called, is_true_called in call_results])
         '''

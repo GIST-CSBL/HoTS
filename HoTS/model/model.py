@@ -210,7 +210,9 @@ class HoTSModel(object):
     def repeat_vector(self, args):
         layer_to_repeat = args[0]
         sequence_layer = args[1]
-        return Permute([2,1])(RepeatVector(K.shape(sequence_layer)[1])(layer_to_repeat))
+        to_be_repeated = K.expand_dims(layer_to_repeat,axis=1)
+        one_matrix = K.ones_like(sequence_layer[:,:1])
+        return K.batch_dot(one_matrix,to_be_repeated)
 
     def dense_norm(self, units, activation, name=None, dropout=0.0, params_dic=None, norm=True):
         def dense_func(input):

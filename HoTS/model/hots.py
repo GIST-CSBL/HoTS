@@ -79,7 +79,7 @@ class HoTS(object):
         self.protein_encoder = ProteinEncoder(**protein_encoder_config)
         self.compound_encoder_config = compound_encoder_config
         self.compound_encoder = CompoundEncoder(**compound_encoder_config)
-        hots_model = HoTSModel(self.drug_layers, self.protein_strides,self.filters, self.fc_layers, self.hots_fc_layers,
+        hots_model = HoTSModel(self.drug_layers, self.protein_strides, self.filters, self.fc_layers, self.hots_fc_layers,
                                dropout=self.dropout, hots_dimension=self.hots_dimension,
                                activation=self.activation, protein_grid_size=self.protein_grid_size,
                                 protein_layers=self.protein_layers,drug_vec=self.drug_vec, drug_len=self.drug_len, anchors=self.anchors,
@@ -211,6 +211,30 @@ class HoTS(object):
             result_df.save(output_file, index=False)
         else:
             return predicted_dtis
+
+    def DTI_chemical_library_prediction(self, chemical_library, protein_id, output_file, batch_size=32, **kwargs):
+        from urllib.request import urlopen
+        uniprot_url = "https://www.uniprot.org/uniprot/{0}.fasta"
+        opened = urlopen(uniprot_url.format(protein_id))
+        lines = opened.readlines()
+        target_protein = "".join([line.rstrip() for line in lines[1:] ])
+        chemical_library_gen = DataGeneratorChemicalLibrary(chemical_library, target_protein,
+                                                            batch_size=batch_size, protein_encoder=self.protein_encoder,
+                                                            compound_encoder=self.protein_grid_size,
+                                                            grid_size=self.protein_grid_size)
+        output_file_opened = open(output_file, 'w')
+        try:
+            while True:
+                drug_feature, seq_feature, masks, drugs   = chemical_library_gen.next()
+                prediction_dti = self.model_t.predict_on_batch([drug_feature, seq_feature, masks])
+                for score, drug in zip(prediction_dti[:, 0], drugs):
+                    scores_out = ",".join([drug, str(score)])
+                    output_file_opened.write(scores_out)
+                    output_file_opened.flush()
+        except StopIteration as e:
+            output_file_opened.close()
+
+
 
     def HoTS_prediction(self, drug_feature, protein_feature, th=0., batch_size=32, **kwargs):
         test_n_steps = int(np.ceil(len(protein_feature)/batch_size))

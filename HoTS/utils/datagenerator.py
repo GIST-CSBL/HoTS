@@ -75,6 +75,57 @@ class DataGeneratorDTI(object):
                 return [drugs, protein_features, mask]
 
 
+class DataGeneratorChemicalLibrary(object):
+    """
+
+    """
+    def __init__(self, chemical_library, target_protein, batch_size=32, protein_encoder=None, compound_encoder=None, grid_size=10, protein_max_len=2500):
+        self.__batch_size = batch_size
+        self.protein_encoder = protein_encoder
+        self.compound_encoder = compound_encoder
+        self.__grid_size = grid_size
+        self.protein_max_len = protein_max_len
+        self.max_len = min(int(np.ceil(target_protein / self.__grid_size) * self.__grid_size), self.protein_max_len)
+        self.protein_feature = self.protein_encoder.encode()
+        self.num = 0
+        self.chemical_library = chemical_library
+
+        self.chemical_library = open(chemical_library, 'r')
+        self.stop_condition = False
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+    def next(self):
+        if self.stop_condition:
+            raise StopIteration
+        drugs = []
+        for i in range(self.__batch_size):
+            smiles = self.chemical_library.readline().strip()
+            if not smiles:
+                self.chemical_library.close()
+                self.stop_condition = True
+                break
+            else:
+                drugs.append(smiles)
+        protein_features = self.protein_encoder.pad([self.protein_feature]*len(drugs), max_len=self.max_len)
+        mask = np.ones(shape=(len(drugs), self.max_len))
+
+        if self.__compound_type.split("_")[0]=="SMILES":
+            smiles_max_len = max([len(smiles) for smiles in drugs])
+            smiles_max_len = int(np.ceil(smiles_max_len/self.__grid_size)*self.__grid_size)
+            drugs_features = self.compound_encoder.pad([self.compound_encoder.encode(drug) for drug in drugs], smiles_max_len)
+            return [drugs_features, protein_features, drugs]
+        else:
+            drugs_features = self.compound_encoder.pad([self.compound_encoder.encode(drug) for drug in drugs])
+            drugs_features = np.stack(drugs_features)
+            return [drugs_features, protein_features, mask, drugs]
+
+
+
 class DataGeneratorHoTS(object):
     """
 
