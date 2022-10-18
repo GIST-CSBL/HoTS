@@ -51,6 +51,7 @@ class HoTS(object):
         self.dti_file = None
         self.hots_validation_results = {}
         self.dti_validation_results = {}
+        self.hots_model = None
         print("Hots model initialization done!")
 
     def build_model(self, dropout=0.1, drug_layers=(1024,512), protein_strides = (10,15,20,25), filters=64,
@@ -79,12 +80,12 @@ class HoTS(object):
         self.protein_encoder = ProteinEncoder(**protein_encoder_config)
         self.compound_encoder_config = compound_encoder_config
         self.compound_encoder = CompoundEncoder(**compound_encoder_config)
-        hots_model = HoTSModel(self.drug_layers, self.protein_strides, self.filters, self.fc_layers, self.hots_fc_layers,
+        self.hots_model = HoTSModel(self.drug_layers, self.protein_strides, self.filters, self.fc_layers, self.hots_fc_layers,
                                dropout=self.dropout, hots_dimension=self.hots_dimension,
                                activation=self.activation, protein_grid_size=self.protein_grid_size,
                                 protein_layers=self.protein_layers,drug_vec=self.drug_vec, drug_len=self.drug_len, anchors=self.anchors,
                                hots_n_heads=self.hots_n_heads, n_stack_hots_prediction=self.n_stack_hots_prediction)
-        self.model_hots, self.model_t = hots_model.get_model_hots(), hots_model.get_model_t()
+        self.model_hots, self.model_t = self.hots_model.get_model_hots(), self.hots_model.get_model_t()
         #K.get_session().run(tf.global_variables_initializer())
 
     def get_model(self):
@@ -135,12 +136,20 @@ class HoTS(object):
             self.build_model(**class_dict)
             #self.summary()
             hots_file = class_dict["hots_file"]
-            self.model_hots.load_weights(hots_file)
-            #self.model_hots = models.load_model(hots_file)
+            #self.model_hots.load_weights(hots_file, by_name=True)
+            custom_objects = {"PLayer":self.hots_model.PLayer,
+                              "repeat_vector":self.hots_model.repeat_vector,
+                              "dense_norm":self.hots_model.dense_norm,
+                              "time_distributed_dense_norm": self.hots_model.time_distributed_dense_norm,
+                              "attention":self.hots_model.attention,
+                              "self_attention":self.hots_model.self_attention,
+                              "crop":self.hots_model.crop,
+                              "position_embedding":self.hots_model.position_embedding}
+            self.model_hots = models.load_model(hots_file, custom_objects=custom_objects)
             print("\tHoTS Model is loaded from %s"%hots_file)
             dti_file = class_dict["dti_file"]
-            self.model_t.load_weights(dti_file)
-            #self.model_t = models.load_model(dti_file)
+            #self.model_t.load_weights(dti_file, by_name=True)
+            self.model_t = models.load_model(dti_file, custom_objects=custom_objects)
             print("\tDTI Model is loaded from %s"%dti_file)
         else:
             if hots_file is not None:
