@@ -1,9 +1,9 @@
-from HoTS.model import WeightNormalization
 import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 import tensorflow.keras.backend as K
+from HoTS.model.normalization import WeightNormalization
 
 import math
 
