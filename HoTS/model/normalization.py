@@ -1,7 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import *#Layer, Wrapper
-
-from tensorflow.keras.initializers import Ones, Zeros
+from tensorflow.keras.layers import Wrapper
 import tensorflow.keras.backend as K
 
 _DEFAULT_WEIGHT_NAME = 'kernel'
@@ -80,7 +78,13 @@ class WeightNormalization(Wrapper):
         super(WeightNormalization, self).build()
 
     def call(self, inputs, **kwargs):
-        return self.layer.call(inputs, **kwargs)
+        if 'training' not in kwargs.keys():
+            training = K.learning_phase()
+
+        if 'training' in kwargs.keys():
+            return self.layer.call(inputs, training=training)
+
+        return self.layer.call(inputs)
 
     def compute_output_shape(self, input_shape):
         return self.layer.compute_output_shape(input_shape)
