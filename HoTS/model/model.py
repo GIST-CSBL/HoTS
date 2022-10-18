@@ -1,6 +1,5 @@
-#from HoTS.model import MeanOnlyBatchNormalization, WeightNormalization
+from HoTS.model import WeightNormalization
 import tensorflow as tf
-import tensorflow_addons as tfa
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
@@ -193,7 +192,7 @@ class HoTSModel(object):
 
             if norm:
                 model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)
-                model_conv = tfa.layers.WeightNormalization(model_conv, name=name+"_norm")(input)
+                model_conv = WeightNormalization(model_conv, name=name+"_norm")(input)
                 model_conv = BatchNormalization(name=name+"_meanonly_batchnorm", scale=False)(model_conv)
                 #model_conv = LayerNormalization(name=name + "_batchnorm")(model_conv)
             else:

@@ -6,67 +6,6 @@ import tensorflow.keras.backend as K
 
 _DEFAULT_WEIGHT_NAME = 'kernel'
 
-
-class MeanOnlyBatchNormalization(Layer):
-    def __init__(self,
-                 momentum=0.999,
-                 moving_mean_initializer='zeros',
-                 axis=-1,
-                 **kwargs):
-        super().__init__(**kwargs)
-        self.momentum = momentum
-        self.moving_mean_initializer = moving_mean_initializer
-        self.axis = axis
-
-    def build(self, input_shape):
-        dim = input_shape[self.axis]
-        shape = (dim,)
-
-        self.moving_mean = self.add_weight(
-            shape=shape,
-            name='moving_mean',
-            initializer=self.moving_mean_initializer,
-            trainable=False)
-
-        super().build(input_shape)
-
-    def call(self, inputs, training=None):
-        input_shape = K.int_shape(inputs)
-        # Prepare broadcasting shape.
-        reduction_axes = list(range(len(input_shape)))
-        del reduction_axes[self.axis]
-
-        # inference
-        def normalize_inference():
-            return inputs - self.moving_mean
-
-        if training in {0, False}:
-            return normalize_inference()
-
-        mean = K.mean(inputs, axis=reduction_axes)
-        normed_training = inputs - mean
-
-        self.add_update(K.moving_average_update(self.moving_mean, mean,
-                                                self.momentum), inputs)
-
-        return K.in_train_phase(normed_training,
-                                normalize_inference,
-                                training=training)
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
-
-    def get_config(self):
-        config = {
-            'axis': self.axis,
-            'momentum': self.momentum,
-            'moving_mean_initializer':
-                self.moving_mean_initializer,
-        }
-        base_config = super(MeanOnlyBatchNormalization, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-
-
 class WeightNormalization(Wrapper):
     """ Applies weight normalization to a layer. Weight normalization is a reparameterization that decouples the
     magnitude of a weight tensor from its direction. This speeds up convergence by improving the conditioning of the
