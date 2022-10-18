@@ -18,8 +18,7 @@ class Conv1DWeightNorm(Conv1D):
         trainable=True,
     )
     super(Conv1DWeightNorm, self).build(input_shape)
-    square_sum = tf.reduce_sum(
-        tf.square(self.kernel), [0, 1, 2], keepdims=False)
+    square_sum = tf.reduce_sum(tf.square(self.kernel), [0, 1], keepdims=False)
     inv_norm = tf.math.rsqrt(square_sum)
     self.kernel = self.kernel * (inv_norm * self.wn_g)
 
@@ -40,8 +39,6 @@ class HoTSModel(object):
                       # "activity_regularizer": l2(regularizer_param),
                       "kernel_regularizer": l2(regularizer_param),
         }
-        if activation=='gelu':
-            activation = self.gelu
 
         # Drug input embedding
         input_d = Input(shape=(drug_len,))
@@ -87,8 +84,6 @@ class HoTSModel(object):
         model_d_ref = self.time_distributed_dense_norm(hots_dimension, None, dropout=0.0, norm=True, params_dic=params_dic,
                                                        use_bias=False, name='DTI_Drug_Representation')(model_d_ref)
         model_p_orig = Concatenate(axis=1)([model_d_ref, model_p_orig])
-
-        #model_p_orig = Lambda(lambda a: K.clip(a, -1.0, 1.0))(model_p_orig)
         '''
         model_d_ref = RepeatVector(1)(model_ds[-1])
         model_p_orig = Concatenate(axis=1)([model_d_ref, model_p_orig])
@@ -199,13 +194,13 @@ class HoTSModel(object):
         self.model_hots = Model(inputs=[input_d, input_p, input_mask], outputs=model_hots)
         self.model_t = Model(inputs=[input_d, input_p, input_mask], outputs = model_t)
 
-
+    '''
     def gelu(self, x):
         return 0.5 * x * (1 + K.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * K.pow(x, 3))))
+    '''
 
     def PLayer(self, size, filters, activation, dropout, params_dic, norm=True, name=""):
         def f(input):
-
             if norm:
                 model_conv = Conv1DWeightNorm(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)(input)
                 #model_conv = WeightNormalization(model_conv, name=name+"_norm")(input)

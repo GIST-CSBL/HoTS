@@ -67,11 +67,16 @@ class HoTSPooling(object):
         for ind in index_result:
             suppressed_index_result[int(ind[0])].append((ind[1], ind[2], ind[3]))
         suppressed_index_result = list(suppressed_index_result.values())
+
+        suppressed_index_result = [self.non_maxmimal_suppression(suppressed_index) for suppressed_index in
+                                   suppressed_index_result]
+        '''
         pool = Pool(processes=n_samples)
         suppressed_index_result = pool.map(self.non_maxmimal_suppression, suppressed_index_result)
         pool.close()
         pool.terminate()
         pool.join()
+        '''
         return suppressed_index_result
 
     def hots_to_subsequence(self, sequences, hots_samples):
