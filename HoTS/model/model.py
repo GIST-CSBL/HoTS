@@ -3,24 +3,9 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 import tensorflow.keras.backend as K
-from HoTS.model.normalization import WeightNormalization
+from tensorflow_addons.layers import WeightNormalization
 
 import math
-
-class Conv1DWeightNorm(Conv1D):
-
-  def build(self, input_shape):
-    self.wn_g = self.add_weight(
-        name='wn_g',
-        shape=(self.filters,),
-        dtype=self.dtype,
-        initializer=tf.initializers.ones,
-        trainable=True,
-    )
-    super(Conv1DWeightNorm, self).build(input_shape)
-    square_sum = tf.reduce_sum(tf.square(self.kernel), [0, 1], keepdims=False)
-    inv_norm = tf.math.rsqrt(square_sum)
-    self.kernel = self.kernel * (inv_norm * self.wn_g)
 
 
 class HoTSModel(object):
@@ -202,7 +187,7 @@ class HoTSModel(object):
     def PLayer(self, size, filters, activation, dropout, params_dic, norm=True, name=""):
         def f(input):
             if norm:
-                model_conv = Conv1DWeightNorm(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)#(input)
+                model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)#(input)
                 model_conv = WeightNormalization(model_conv, name=name+"_norm")(input)
                 model_conv = BatchNormalization(name=name+"_meanonly_batchnorm", scale=False)(model_conv)
                 #model_conv = LayerNormalization(name=name + "_batchnorm")(model_conv)
