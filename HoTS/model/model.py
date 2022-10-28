@@ -189,8 +189,8 @@ class HoTSModel(object):
             if norm:
                 model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)(input)
                 #model_conv = WeightNormalization(model_conv, name=name+"_norm")(input)
-                #model_conv = BatchNormalization(name=name+"_meanonly_batchnorm", scale=False)(model_conv)
-                model_conv = LayerNormalization(name=name + "_layernorm")(model_conv)
+                model_conv = BatchNormalization(name=name+"_batchnorm")(model_conv)
+                #model_conv = LayerNormalization(name=name + "_layernorm")(model_conv)
             else:
                 model_conv = Convolution1D(filters=filters, kernel_size=size, padding='same', name=name, **params_dic)(input)
             model_conv = Activation(activation, name=name+"_activation")(model_conv)
