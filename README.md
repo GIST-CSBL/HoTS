@@ -149,7 +149,7 @@ You can generate BR data by following [notebook](SampleData/HoTS/Parsing_scPDB_f
 
 ### Prediction with the trained model 
 
-We uploaded [the trained model](Model/HoTS_config.json) in our repository.
+We uploaded [the trained model](Model/Model_config.json) in our repository.
 
 With the trained model, you can predict BRs and DTIs.
 
